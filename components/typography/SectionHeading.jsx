@@ -27,7 +27,8 @@ export default function SectionHeading({
       ) : null}
       <AnimatedText
         as="h2"
-        mode="rise"
+        mode="words"
+        stagger={0.055}
         className="text-depth font-display text-section font-medium text-ink"
       >
         {title}
@@ -35,7 +36,8 @@ export default function SectionHeading({
       {subtitle ? (
         <AnimatedText
           as="p"
-          delay={0.1}
+          mode="blur"
+          delay={0.12}
           className="text-depth-soft max-w-xl text-ink-secondary"
         >
           {subtitle}

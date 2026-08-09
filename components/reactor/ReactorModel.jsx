@@ -6,24 +6,24 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=14';
+const MODEL_URL = '/models/reactor.glb?v=15';
 
-/** Shiny brown copper — metallic + lustrous, warm chocolate tone */
+/** Shiny brown copper — polished metallic chocolate */
 function makeLustrousCopper(source) {
   const m = new THREE.MeshPhysicalMaterial({
-    color: '#8a4a28',
+    color: '#6e3a1c',
     metalness: 1,
-    roughness: 0.12,
-    emissive: new THREE.Color('#3a1a0c'),
-    emissiveIntensity: 0.05,
-    envMapIntensity: 2.1,
-    clearcoat: 0.55,
-    clearcoatRoughness: 0.12,
+    roughness: 0.08,
+    emissive: new THREE.Color('#2a1208'),
+    emissiveIntensity: 0.04,
+    envMapIntensity: 2.6,
+    clearcoat: 0.75,
+    clearcoatRoughness: 0.08,
     reflectivity: 1,
     ior: 1.4,
-    sheen: 0.35,
-    sheenRoughness: 0.28,
-    sheenColor: new THREE.Color('#c48a55'),
+    sheen: 0.45,
+    sheenRoughness: 0.22,
+    sheenColor: new THREE.Color('#b87a48'),
     toneMapped: true,
   });
   if (source?.name) m.name = source.name;
@@ -48,6 +48,11 @@ export default function ReactorModel({ reducedMotion }) {
     const steelCore = [];
     c.traverse((obj) => {
       if (!obj.isMesh) return;
+      // Remove the three loose cables poking out of the reactor
+      if (/^Cable[_-]?\d*$/i.test(obj.name) || obj.name.startsWith('Cable')) {
+        obj.visible = false;
+        return;
+      }
       // Shadows off — major hover/scroll lag source on dense meshes
       obj.castShadow = false;
       obj.receiveShadow = false;
@@ -234,7 +239,7 @@ export default function ReactorModel({ reducedMotion }) {
     coreHousing: { z: 0 },
     core: { rotationSpeed: 0.12, emissive: 1.35 },
     emitter: { pulse: 0.32, intensity: 1.2 },
-    layout: { x: 1.15, y: 0.04, scale: 1.42 },
+    layout: { x: 1.1, y: 0.04, scale: 1.12 },
     facing: { x: 0, y: 0 },
   });
 
@@ -311,7 +316,7 @@ export default function ReactorModel({ reducedMotion }) {
       if (!obj.userData.basePos) obj.userData.basePos = obj.position.clone();
       const b = obj.userData.basePos;
       const len = Math.hypot(b.x, b.z) || 1;
-      const f = 1 + c.outerShell.radial * 0.42;
+      const f = 1 + c.outerShell.radial * 0.62;
       obj.position.x = (b.x / len) * len * f;
       obj.position.z = (b.z / len) * len * f;
     });
@@ -327,7 +332,7 @@ export default function ReactorModel({ reducedMotion }) {
 
   return (
     <group ref={root}>
-      <group rotation={[Math.PI / 2, 0, 0]} scale={0.62}>
+      <group rotation={[Math.PI / 2, 0, 0]} scale={0.52}>
         <primitive object={cloned} />
       </group>
       <pointLight

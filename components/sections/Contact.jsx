@@ -28,13 +28,14 @@ export default function Contact() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         '[data-cta]',
-        { autoAlpha: 0, y: 28 },
+        { autoAlpha: 0, y: 36, filter: 'blur(8px)' },
         {
           autoAlpha: 1,
           y: 0,
+          filter: 'blur(0px)',
           duration: duration.cinematic,
           ease: ease.soft,
-          stagger: 0.12,
+          stagger: 0.14,
           scrollTrigger: {
             trigger: root.current,
             start: 'top 65%',
@@ -60,13 +61,22 @@ export default function Contact() {
             06 — Final sequence
           </p>
           <h2 className="text-depth mt-8 font-display font-medium text-ink">
-            <span data-cta className="block text-statement opacity-0">
+            <span
+              data-cta
+              className="block text-statement will-change-transform opacity-0"
+            >
               LET&apos;S BUILD
             </span>
-            <span data-cta className="mt-2 block text-statement opacity-0">
+            <span
+              data-cta
+              className="mt-2 block text-statement will-change-transform opacity-0"
+            >
               SOMETHING
             </span>
-            <span data-cta className="mt-2 block text-statement opacity-0">
+            <span
+              data-cta
+              className="mt-2 block text-statement will-change-transform opacity-0"
+            >
               REMARKABLE.
             </span>
           </h2>

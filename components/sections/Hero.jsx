@@ -60,8 +60,16 @@ export default function Hero() {
         )
         .fromTo(
           '[data-hero="line"]',
-          { autoAlpha: 0, y: 36 },
-          { autoAlpha: 1, y: 0, duration: duration.text, stagger: 0.14 },
+          { autoAlpha: 0, y: 48, rotateX: 12, filter: 'blur(8px)' },
+          {
+            autoAlpha: 1,
+            y: 0,
+            rotateX: 0,
+            filter: 'blur(0px)',
+            duration: duration.text * 1.1,
+            stagger: 0.16,
+            transformPerspective: 800,
+          },
           '-=0.15',
         )
         .fromTo(
@@ -121,12 +129,12 @@ export default function Hero() {
             className="text-depth mt-10 font-display font-medium text-ink"
             style={{ color: 'var(--text-primary)', WebkitTextFillColor: 'var(--text-primary)' }}
           >
-            <span data-hero="line" className="block text-hero opacity-0">
+            <span data-hero="line" className="block text-hero will-change-transform opacity-0">
               I BUILD
             </span>
             <span
               data-hero="line"
-              className="mt-1 block text-hero opacity-0"
+              className="mt-1 block text-hero will-change-transform opacity-0"
             >
               DIGITAL SYSTEMS.
             </span>
@@ -134,7 +142,7 @@ export default function Hero() {
 
           <p
             data-hero="support"
-            className="text-depth-soft mt-8 max-w-md text-sub leading-relaxed text-ink-secondary opacity-0"
+            className="text-depth-soft mt-8 max-w-md text-sub leading-relaxed text-ink-secondary will-change-transform opacity-0"
           >
             And experiences that feel alive.
           </p>

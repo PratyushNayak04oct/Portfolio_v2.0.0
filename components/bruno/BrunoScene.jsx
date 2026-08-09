@@ -27,10 +27,10 @@ function BrunoCanvas({ state }) {
       performance={{ min: 0.5 }}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <ambientLight intensity={0.7} color="#e8eef2" />
-      <directionalLight position={[2.5, 3.5, 2]} intensity={1.45} color="#fff6e8" />
-      <directionalLight position={[-2, 1.2, 1]} intensity={0.55} color="#ffd2a0" />
-      <directionalLight position={[0, 2, -2]} intensity={0.3} color="#8ad4e8" />
+      <ambientLight intensity={0.55} color="#dce4ec" />
+      <directionalLight position={[2.8, 3.8, 2.2]} intensity={1.55} color="#ffffff" />
+      <directionalLight position={[-2.2, 1.4, 1]} intensity={0.45} color="#9ec8ff" />
+      <directionalLight position={[0.5, 2, -2]} intensity={0.35} color="#ff7070" />
       <Suspense fallback={null}>
         <BrunoModel state={state} />
       </Suspense>

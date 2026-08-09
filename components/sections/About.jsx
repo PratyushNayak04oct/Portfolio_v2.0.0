@@ -17,11 +17,12 @@ export default function About() {
           <SectionHeading eyebrow="01 — About" title="I BUILD SYSTEMS." />
           <AnimatedText
             as="p"
+            mode="words"
             delay={0.12}
+            stagger={0.028}
             className="text-depth-soft mt-10 max-w-xl text-sub leading-relaxed text-ink-secondary"
           >
-            From enterprise applications to interactive web experiences, I enjoy
-            turning complex problems into intuitive digital products.
+            From enterprise applications to interactive web experiences, I enjoy turning complex problems into intuitive digital products.
           </AnimatedText>
         </div>
 
