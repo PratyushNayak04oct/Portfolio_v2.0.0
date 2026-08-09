@@ -4,6 +4,7 @@ import { useState } from 'react';
 import SectionHeading from '@/components/typography/SectionHeading';
 import TechnicalArchitecture from '@/components/technical/TechnicalArchitecture';
 import AnimatedText from '@/components/typography/AnimatedText';
+import { useParallax } from '@/hooks/useParallax';
 
 const experiments = [
   {
@@ -35,19 +36,22 @@ const experiments = [
 export default function Lab() {
   const [active, setActive] = useState(experiments[0].id);
   const current = experiments.find((e) => e.id === active) || experiments[0];
+  const headingRef = useParallax(22);
 
   return (
-    <section id="lab" className="relative z-10 py-28 md:py-36">
-      <div className="mx-auto max-w-[1400px] px-5 md:px-8">
-        <SectionHeading
-          eyebrow="05 — Lab"
-          title="LAB"
-          subtitle="Experiments in WebGL, motion, AI tooling, and real-time systems."
-        />
+    <section id="lab" className="relative z-10 section-space">
+      <div className="content-grid">
+        <div ref={headingRef} className="will-change-transform">
+          <SectionHeading
+            eyebrow="05 — Lab"
+            title="LAB"
+            subtitle="Experiments in WebGL, motion, AI tooling, and real-time systems."
+          />
+        </div>
 
-        <div className="mt-16 grid grid-cols-12 gap-8">
+        <div className="mt-16 grid grid-cols-12 gap-10 md:mt-20 lg:gap-14">
           <div className="col-span-12 lg:col-span-5">
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {experiments.map((exp) => {
                 const on = exp.id === active;
                 return (
@@ -57,10 +61,10 @@ export default function Lab() {
                       data-cursor="interactive"
                       onClick={() => setActive(exp.id)}
                       onMouseEnter={() => setActive(exp.id)}
-                      className={`flex w-full items-center justify-between border px-4 py-4 text-left transition-all duration-400 ${
+                      className={`flex w-full items-center justify-between rounded-xl px-5 py-5 text-left transition-all duration-400 ${
                         on
-                          ? 'border-cyan/40 bg-surface/70'
-                          : 'border-line/60 bg-transparent hover:border-line'
+                          ? 'glass-panel'
+                          : 'border border-transparent hover:border-line/80 hover:bg-secondary/30'
                       }`}
                     >
                       <span className="font-display text-sub text-ink">
@@ -75,40 +79,42 @@ export default function Lab() {
               })}
             </ul>
 
-            <AnimatedText as="p" className="mt-8 max-w-md text-ink-secondary">
+            <AnimatedText
+              as="p"
+              className="mt-10 max-w-md leading-relaxed text-ink-secondary"
+            >
               {current.copy}
             </AnimatedText>
           </div>
 
-          <div className="col-span-12 lg:col-span-7">
-            <div className="relative mb-8 aspect-[16/10] overflow-hidden border border-line/70 bg-primary">
+          <div className="col-span-12 space-y-6 lg:col-span-7">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/5 bg-primary">
               <div
                 className="absolute inset-0 transition-opacity duration-700"
                 style={{
                   background:
                     active === 'webgl'
-                      ? 'radial-gradient(circle at 60% 40%, rgba(38,120,255,0.35), transparent 55%), #081118'
+                      ? 'radial-gradient(circle at 60% 40%, rgba(38,120,255,0.4), transparent 55%), #081118'
                       : active === 'mcp'
-                        ? 'linear-gradient(135deg, rgba(25,182,165,0.2), transparent 50%), #081118'
+                        ? 'linear-gradient(135deg, rgba(25,182,165,0.25), transparent 50%), #081118'
                         : active === 'motion'
-                          ? 'linear-gradient(120deg, rgba(99,199,217,0.2), transparent 45%), #081118'
-                          : 'radial-gradient(circle at 30% 70%, rgba(242,140,91,0.15), transparent 50%), #081118',
+                          ? 'linear-gradient(120deg, rgba(99,199,217,0.25), transparent 45%), #081118'
+                          : 'radial-gradient(circle at 30% 70%, rgba(242,140,91,0.18), transparent 50%), #081118',
                 }}
               />
-              <div className="absolute inset-0 flex items-end p-6">
-                <p className="font-mono text-tech uppercase text-cyan">
+              <div
+                className="absolute inset-0 opacity-25"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(rgba(99,199,217,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(99,199,217,0.35) 1px, transparent 1px)',
+                  backgroundSize: '44px 44px',
+                }}
+              />
+              <div className="absolute inset-0 flex items-end p-7">
+                <p className="font-mono text-tech uppercase tracking-[0.16em] text-cyan">
                   Experiment // {current.tag}
                 </p>
               </div>
-              {/* Subtle interactive grid */}
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage:
-                    'linear-gradient(rgba(99,199,217,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(99,199,217,0.3) 1px, transparent 1px)',
-                  backgroundSize: '40px 40px',
-                }}
-              />
             </div>
             <TechnicalArchitecture />
           </div>

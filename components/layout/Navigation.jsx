@@ -26,8 +26,10 @@ export default function Navigation() {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div
-        className={`mx-auto flex max-w-[1400px] items-center justify-between px-5 py-4 transition-all duration-500 md:px-8 ${
-          scrolled ? 'glass-panel mt-3 rounded-xl px-5 md:mx-6' : ''
+        className={`mx-auto flex max-w-[1320px] items-center justify-between px-[clamp(1.25rem,4vw,3rem)] py-4 transition-all duration-500 ${
+          scrolled
+            ? 'glass-panel mt-3 rounded-2xl px-5 shadow-[0_12px_40px_rgba(0,0,0,0.25)] md:mx-6'
+            : ''
         }`}
       >
         <a

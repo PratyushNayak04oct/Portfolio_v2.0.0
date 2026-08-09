@@ -31,8 +31,7 @@ export default function CustomCursor() {
         setLabel('');
         return;
       }
-      const type = el.getAttribute('data-cursor') || 'interactive';
-      setMode(type);
+      setMode(el.getAttribute('data-cursor') || 'interactive');
       setLabel(el.getAttribute('data-cursor-label') || '');
     };
 
@@ -41,15 +40,10 @@ export default function CustomCursor() {
       pos.current.x += (target.current.x - pos.current.x) * damp.cursor;
       pos.current.y += (target.current.y - pos.current.y) * damp.cursor;
 
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
-      }
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
-      }
-      if (labelRef.current) {
-        labelRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
-      }
+      const t = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
+      if (dotRef.current) dotRef.current.style.transform = t;
+      if (ringRef.current) ringRef.current.style.transform = t;
+      if (labelRef.current) labelRef.current.style.transform = t;
       raf = requestAnimationFrame(tick);
     };
 
@@ -73,20 +67,22 @@ export default function CustomCursor() {
     <div className="pointer-events-none fixed inset-0 z-[100]" aria-hidden="true">
       <div
         ref={dotRef}
-        className="absolute top-0 left-0 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink"
+        className="absolute top-0 left-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_12px_rgba(99,199,217,0.55)]"
         style={{ willChange: 'transform' }}
       />
       <div
         ref={ringRef}
-        className={`absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan/50 transition-[width,height,opacity] duration-300 ease-out ${
-          interactive ? 'h-12 w-12 opacity-80' : 'h-8 w-8 opacity-40'
+        className={`absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cyan/45 transition-[width,height,opacity,border-color] duration-300 ease-out ${
+          interactive
+            ? 'h-16 w-16 border-cyan/70 opacity-90'
+            : 'h-11 w-11 opacity-55'
         }`}
         style={{ willChange: 'transform' }}
       />
       {mode === 'project' && label ? (
         <div
           ref={labelRef}
-          className="absolute top-6 left-6 font-mono text-tech uppercase text-cyan"
+          className="absolute top-8 left-8 rounded-full border border-cyan/25 bg-secondary/70 px-3 py-1 font-mono text-tech uppercase tracking-[0.14em] text-cyan backdrop-blur-md"
           style={{ willChange: 'transform' }}
         >
           {label}

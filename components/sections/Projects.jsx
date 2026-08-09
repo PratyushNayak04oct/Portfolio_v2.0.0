@@ -29,8 +29,8 @@ export default function Projects() {
       scrollTrigger: {
         trigger: sectionRef.current,
         start: 'top top',
-        end: () => `+=${Math.max(totalScroll, window.innerHeight * 0.8)}`,
-        scrub: 0.8,
+        end: () => `+=${Math.max(totalScroll * 0.85, window.innerHeight * 0.7)}`,
+        scrub: 1,
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
@@ -44,8 +44,8 @@ export default function Projects() {
   }, [reduced, isDesktop]);
 
   return (
-    <section id="projects" ref={sectionRef} className="relative z-10 py-28 md:py-0">
-      <div className="mx-auto max-w-[1400px] px-5 pt-28 md:px-8 md:pt-32">
+    <section id="projects" ref={sectionRef} className="relative z-10">
+      <div className="content-grid section-space pb-8 md:pb-10">
         <SectionHeading
           eyebrow="04 — Work"
           title="Selected systems & experiences."
@@ -55,7 +55,7 @@ export default function Projects() {
 
       <div
         ref={trackRef}
-        className="mt-12 flex gap-5 px-5 pb-28 md:mt-16 md:gap-6 md:px-8 md:pb-32 will-change-transform"
+        className="flex gap-6 px-[clamp(1.25rem,4vw,3rem)] pb-24 will-change-transform md:gap-8 md:pb-32"
       >
         {projects.map((project, index) => (
           <ProjectCard key={project.slug} project={project} index={index} />

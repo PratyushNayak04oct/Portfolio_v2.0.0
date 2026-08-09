@@ -19,7 +19,11 @@ export default function Hero() {
     const { gsap } = getGsap();
 
     if (reduced) {
-      gsap.set(root.current.querySelectorAll('[data-hero]'), { autoAlpha: 1, y: 0, filter: 'none' });
+      gsap.set(root.current.querySelectorAll('[data-hero]'), {
+        autoAlpha: 1,
+        y: 0,
+        filter: 'none',
+      });
       return undefined;
     }
 
@@ -40,13 +44,18 @@ export default function Hero() {
         .fromTo(
           '[data-hero="brand"]',
           { autoAlpha: 0, y: 24, filter: 'blur(6px)' },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: duration.text },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: duration.text,
+          },
           '-=0.2',
         )
         .fromTo(
           '[data-hero="line"]',
           { autoAlpha: 0, y: 36 },
-          { autoAlpha: 1, y: 0, duration: duration.text, stagger: 0.12 },
+          { autoAlpha: 1, y: 0, duration: duration.text, stagger: 0.14 },
           '-=0.15',
         )
         .fromTo(
@@ -76,45 +85,48 @@ export default function Hero() {
     <section
       id="hero"
       ref={root}
-      className="relative z-10 flex min-h-[100svh] items-center pt-24 pb-16"
+      className="relative z-10 flex min-h-[100svh] items-center pt-28 pb-20"
     >
-      <div className="mx-auto grid w-full max-w-[1400px] grid-cols-12 gap-6 px-5 md:px-8">
+      <div className="content-grid grid w-full grid-cols-12 gap-10 lg:gap-12">
         <div className="col-span-12 flex flex-col justify-center lg:col-span-6">
           <p
             data-hero="meta"
-            className="font-mono text-tech uppercase text-ink-muted opacity-0"
+            className="font-mono text-tech uppercase tracking-[0.18em] text-ink-muted opacity-0"
           >
             LAB.COORD // 00.01 — MIDNIGHT
           </p>
 
           <p
             data-hero="brand"
-            className="mt-6 font-display text-sub font-medium tracking-[0.08em] text-ink opacity-0"
+            className="mt-8 font-display text-sub font-medium tracking-[0.1em] text-ink opacity-0"
           >
             {site.brand}
           </p>
 
-          <p className="mt-2 font-mono text-tech uppercase text-cyan opacity-90">
+          <p className="mt-3 font-mono text-tech uppercase tracking-[0.14em] text-cyan opacity-90">
             {site.roles.join(' · ')}
           </p>
 
-          <h1 className="mt-8 font-display font-medium text-ink">
+          <h1 className="mt-10 font-display font-medium text-ink">
             <span data-hero="line" className="block text-hero opacity-0">
               I BUILD
             </span>
-            <span data-hero="line" className="block text-hero opacity-0">
+            <span
+              data-hero="line"
+              className="mt-1 block text-hero opacity-0"
+            >
               DIGITAL SYSTEMS.
             </span>
           </h1>
 
           <p
             data-hero="support"
-            className="mt-6 max-w-md text-ink-secondary opacity-0"
+            className="mt-8 max-w-md text-sub leading-relaxed text-ink-secondary opacity-0"
           >
             And experiences that feel alive.
           </p>
 
-          <div data-hero="cta" className="mt-10 flex flex-wrap gap-4 opacity-0">
+          <div data-hero="cta" className="mt-12 flex flex-wrap gap-5 opacity-0">
             <MagneticButton href="#projects">
               Explore my work <span aria-hidden="true">→</span>
             </MagneticButton>
@@ -126,20 +138,19 @@ export default function Hero() {
 
         <div
           data-hero="reactor-slot"
-          className="relative col-span-12 flex min-h-[42vh] items-center justify-center opacity-0 lg:col-span-6 lg:min-h-[70vh]"
+          className="relative col-span-12 flex min-h-[40vh] items-center justify-center opacity-0 lg:col-span-6 lg:min-h-[65vh]"
         >
+          {/* Ambient glow only — reactor is a full-bleed transparent WebGL layer */}
           <div data-hero="ambient" className="absolute inset-0 opacity-0">
             <div
-              className="absolute left-1/2 top-1/2 h-[55%] w-[55%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+              className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
               style={{
                 background:
-                  'radial-gradient(circle, color-mix(in srgb, var(--blue) 35%, transparent), transparent 70%)',
-                animation: 'softPulse 6s ease-in-out infinite',
+                  'radial-gradient(circle, color-mix(in srgb, var(--cyan) 45%, transparent), color-mix(in srgb, var(--blue) 25%, transparent) 45%, transparent 72%)',
+                animation: 'softPulse 7s ease-in-out infinite',
               }}
             />
           </div>
-          {/* Reactor canvas mounts globally; this reserves visual space */}
-          <div className="pointer-events-none relative z-10 h-full w-full" />
         </div>
       </div>
     </section>
