@@ -23,6 +23,8 @@ function ReactorRig({ reducedMotion }) {
   const camCurrent = useRef({ z: 3.15, fov: 30 });
   const lastFov = useRef(30);
 
+  /* R3F mutates the Three.js camera each frame by design */
+  /* eslint-disable react-hooks/immutability */
   useFrame((_, delta) => {
     if (!group.current) return;
     const t = reactorScroll.target;
@@ -46,6 +48,7 @@ function ReactorRig({ reducedMotion }) {
       }
     }
   });
+  /* eslint-enable react-hooks/immutability */
 
   return (
     <group ref={group}>

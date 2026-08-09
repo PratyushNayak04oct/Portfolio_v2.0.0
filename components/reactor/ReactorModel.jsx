@@ -38,7 +38,7 @@ export default function ReactorModel({ reducedMotion }) {
   const glowMats = useRef([]);
   const steelCoreMats = useRef([]);
 
-  const cloned = useMemo(() => {
+  const prepared = useMemo(() => {
     const c = scene.clone(true);
     const glow = [];
     const steelCore = [];
@@ -139,10 +139,15 @@ export default function ReactorModel({ reducedMotion }) {
         }
       });
     });
-    glowMats.current = glow;
-    steelCoreMats.current = steelCore;
-    return c;
+    return { scene: c, glow, steelCore };
   }, [scene]);
+
+  const cloned = prepared.scene;
+
+  useEffect(() => {
+    glowMats.current = prepared.glow;
+    steelCoreMats.current = prepared.steelCore;
+  }, [prepared]);
 
   useEffect(() => {
     const map = {
