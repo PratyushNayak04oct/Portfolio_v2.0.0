@@ -345,31 +345,34 @@
   }
 }
 
-@keyframes orbitSpin {
+@keyframes orbitCW {
+  from {
+    transform: rotate(0deg);
+  }
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes orbitSpinRev {
+@keyframes orbitCCW {
+  from {
+    transform: rotate(0deg);
+  }
   to {
     transform: rotate(-360deg);
   }
 }
 
-/* Pure CSS orbits — never touched by JS during charge */
+/* Counter-rotating aura — CSS only, never touched by JS during charge */
 .loader-aura-host {
   transform: translate3d(-50%, -50%, 0);
-  contain: strict;
   isolation: isolate;
-  opacity: 0.85;
+  opacity: 0.9;
   transition: opacity 0.7s ease;
-  /* Own compositor layer, detached from core pulse */
-  will-change: opacity;
 }
 
 .loader-aura-host--fade {
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
 .loader-aura {
@@ -381,47 +384,64 @@
 
 .loader-aura__ring {
   position: absolute;
-  inset: 0;
   border-radius: 999px;
-  border: 1px solid transparent;
+  border: 1.5px dashed transparent;
   backface-visibility: hidden;
-  /* GPU layer — CSS animation only, no box-shadow */
   transform: translateZ(0);
+  will-change: transform;
 }
 
-.loader-aura__ring--a {
-  border-color: rgba(99, 199, 217, 0.48);
-  animation: orbitSpin 14s linear infinite;
+/* Outer ring — clockwise */
+.loader-aura__ring--cw {
+  inset: 0;
+  border-color: rgba(99, 199, 217, 0.55);
+  animation: orbitCW 8s linear infinite;
 }
 
-.loader-aura__ring--b {
-  inset: 12%;
-  border-color: rgba(242, 140, 91, 0.36);
+/* Inner ring — anti-clockwise */
+.loader-aura__ring--ccw {
+  inset: 14%;
+  border-color: rgba(242, 140, 91, 0.48);
   border-style: dashed;
-  animation: orbitSpinRev 10s linear infinite;
-}
-
-.loader-aura__ring--c {
-  inset: -10%;
-  border-color: rgba(99, 199, 217, 0.2);
-  opacity: 0.7;
-  animation: orbitSpin 20s linear infinite;
+  animation: orbitCCW 6s linear infinite;
 }
 
 .loader-aura__spark {
   position: absolute;
   top: 0;
   left: 50%;
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  margin-top: -3px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
   border-radius: 999px;
   background: #9ae8ff;
 }
 
 .loader-aura__spark--warm {
   background: #ffb070;
+}
+
+.loader-aura__tick {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 2px;
+  height: 10px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: rgba(154, 232, 255, 0.85);
+}
+
+.loader-aura__tick--2 {
+  top: auto;
+  bottom: -2px;
+  height: 8px;
+  opacity: 0.7;
+}
+
+.loader-aura__tick--warm {
+  background: rgba(255, 176, 112, 0.9);
 }
 
 /* Ticking core glow — opacity/scale only (cheap) */
@@ -450,9 +470,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loader-aura__ring--a,
-  .loader-aura__ring--b,
-  .loader-aura__ring--c {
+  .loader-aura__ring--cw,
+  .loader-aura__ring--ccw {
     animation: none;
   }
 }

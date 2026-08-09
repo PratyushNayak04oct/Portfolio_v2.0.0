@@ -102,6 +102,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
   const neck = useRef(null);
   const torso = useRef(null);
   const tail = useRef(null);
+  const midTail = useRef(null);
   const tailTip = useRef(null);
   const jaw = useRef(null);
   const earL = useRef(null);
@@ -175,14 +176,19 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
     const wagSpeed = state === BRUNO_STATES.Bark ? 16 : happy ? 12 : 9;
     const wagAmp = state === BRUNO_STATES.Bark ? 0.95 : happy ? 0.75 : 0.5;
 
+    // Natural dog wag — base leads, mid/tip follow with lag
     if (tail.current) {
-      tail.current.rotation.z = Math.sin(t * wagSpeed) * wagAmp;
-      tail.current.rotation.y = Math.sin(t * (wagSpeed * 0.65)) * wagAmp * 0.35;
-      tail.current.rotation.x = 0.35 + Math.sin(t * 6) * 0.12;
+      tail.current.rotation.z = Math.sin(t * wagSpeed) * wagAmp * 0.55;
+      tail.current.rotation.y = Math.sin(t * (wagSpeed * 0.5)) * wagAmp * 0.12;
+      tail.current.rotation.x = 0.55 + Math.sin(t * 3.2) * 0.06;
+    }
+    if (midTail.current) {
+      midTail.current.rotation.z = Math.sin(t * wagSpeed - 0.45) * wagAmp * 0.7;
+      midTail.current.rotation.x = 0.15 + Math.sin(t * 3.6) * 0.05;
     }
     if (tailTip.current) {
-      tailTip.current.rotation.z = Math.sin(t * wagSpeed + 0.8) * wagAmp * 0.7;
-      tailTip.current.rotation.x = 0.25 + Math.sin(t * 7) * 0.1;
+      tailTip.current.rotation.z = Math.sin(t * wagSpeed - 0.95) * wagAmp * 0.85;
+      tailTip.current.rotation.x = 0.2 + Math.sin(t * 4.2) * 0.08;
     }
 
     // Canine mouth — mostly closed, opens for bark / happy pant
@@ -511,18 +517,31 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         </mesh>
       </group>
 
-      {/* —— Multi-joint happy wagging tail —— */}
-      <group ref={tail} position={[0, 0.08, -0.3]}>
-        <mesh rotation={[0.55, 0, 0]} material={mats.black}>
-          <capsuleGeometry args={[0.018, 0.12, 4, 8]} />
+      {/* —— Natural tapered dog tail (thick base → fine tip, upward curve) —— */}
+      <group ref={tail} position={[0, 0.1, -0.27]} rotation={[0.5, 0, 0]}>
+        {/* rump / base */}
+        <mesh position={[0, 0.01, -0.02]} rotation={[0.75, 0, 0]} material={mats.black}>
+          <capsuleGeometry args={[0.032, 0.05, 5, 10]} />
         </mesh>
-        <group ref={tailTip} position={[0, 0.06, -0.08]}>
-          <mesh rotation={[0.85, 0, 0]} material={mats.blackSoft}>
-            <capsuleGeometry args={[0.014, 0.1, 4, 8]} />
+        <mesh position={[0, 0.035, -0.07]} rotation={[0.95, 0, 0]} material={mats.black}>
+          <capsuleGeometry args={[0.026, 0.055, 5, 10]} />
+        </mesh>
+        <group ref={midTail} position={[0, 0.07, -0.12]}>
+          <mesh rotation={[1.05, 0, 0]} material={mats.black}>
+            <capsuleGeometry args={[0.02, 0.06, 5, 10]} />
           </mesh>
-          <mesh position={[0, 0.05, -0.06]} rotation={[1.1, 0, 0]} material={mats.silver}>
-            <capsuleGeometry args={[0.009, 0.05, 4, 8]} />
-          </mesh>
+          <group ref={tailTip} position={[0, 0.045, -0.075]}>
+            <mesh rotation={[1.15, 0, 0]} material={mats.blackSoft}>
+              <capsuleGeometry args={[0.014, 0.055, 4, 8]} />
+            </mesh>
+            <mesh position={[0, 0.035, -0.055]} rotation={[1.28, 0, 0]} material={mats.blackSoft}>
+              <capsuleGeometry args={[0.008, 0.04, 4, 8]} />
+            </mesh>
+            {/* fine tip */}
+            <mesh position={[0, 0.055, -0.09]} rotation={[1.35, 0, 0]} material={mats.blackSoft}>
+              <sphereGeometry args={[0.007, 6, 6]} />
+            </mesh>
+          </group>
         </group>
       </group>
 

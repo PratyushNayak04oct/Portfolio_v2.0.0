@@ -6,7 +6,7 @@ import { labActions, useLabStore } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import CoreEmblem from '@/components/ui/CoreEmblem';
 
-useGLTF.preload('/models/reactor.glb?v=19');
+useGLTF.preload('/models/reactor.glb?v=20');
 
 const TICK_MS = 4800;
 const CLIMAX_MS = 900;
@@ -359,11 +359,16 @@ export default function LoadingScreen() {
         aria-hidden="true"
       >
         <div className="loader-aura">
-          <span className="loader-aura__ring loader-aura__ring--c" />
-          <span className="loader-aura__ring loader-aura__ring--a">
+          {/* Clockwise */}
+          <span className="loader-aura__ring loader-aura__ring--cw">
+            <span className="loader-aura__tick" />
+            <span className="loader-aura__tick loader-aura__tick--2" />
             <span className="loader-aura__spark" />
           </span>
-          <span className="loader-aura__ring loader-aura__ring--b">
+          {/* Anti-clockwise */}
+          <span className="loader-aura__ring loader-aura__ring--ccw">
+            <span className="loader-aura__tick loader-aura__tick--warm" />
+            <span className="loader-aura__tick loader-aura__tick--warm loader-aura__tick--2" />
             <span className="loader-aura__spark loader-aura__spark--warm" />
           </span>
         </div>
