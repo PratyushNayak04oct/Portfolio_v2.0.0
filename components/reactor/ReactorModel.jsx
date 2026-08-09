@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=9';
+const MODEL_URL = '/models/reactor.glb?v=10';
 
 /**
  * Front-facing Blender reactor with inverted double-triangle core.
@@ -35,13 +35,16 @@ export default function ReactorModel({ reducedMotion }) {
       mats.forEach((m) => {
         if (!m) return;
         const name = `${m.name || ''} ${obj.name || ''}`.toLowerCase();
-        const isSteelCore =
-          obj.name.includes('TriangleCore') ||
-          obj.name.startsWith('CoreSpoke') ||
-          obj.name === 'CoreRim';
-        const isCoreGlow =
-          obj.name.includes('CoreGlow') ||
-          obj.name.startsWith('CoreLightRing');
+        const isPlate =
+          obj.name.startsWith('CorePlate') ||
+          obj.name === 'CoreWell' ||
+          obj.name.startsWith('CoreBolt');
+        const isTriangleCore =
+          obj.name === 'TriangleCore' ||
+          obj.name.includes('CoreTriangleAura') ||
+          obj.name === 'CoreGlass' ||
+          obj.name === 'CoreInnerRing' ||
+          obj.name.startsWith('CoreCross');
         const isGlow =
           name.includes('glow') ||
           name.includes('acrylic') ||
@@ -59,17 +62,24 @@ export default function ReactorModel({ reducedMotion }) {
             obj.name.includes('CoilWire') ||
             obj.name.includes('Copper'));
 
-        if (isSteelCore && m.color) {
-          m.color = new THREE.Color('#d8e2ec');
-          m.metalness = 1;
-          m.roughness = 0.12;
+        if (isTriangleCore) {
+          // Preserve New Element core — bright white-cyan triangle
+          const hot = obj.name === 'TriangleCore';
+          m.emissive = new THREE.Color(hot ? '#e8f9ff' : '#4ec8ff');
+          m.emissiveIntensity = hot ? 4.2 : 2.4;
+          m.toneMapped = false;
+          if (m.color) m.color = new THREE.Color(hot ? '#d0f0ff' : '#2a6a90');
+          glow.push({ m, base: hot ? 4.0 : 2.2 });
+        } else if (isPlate && m.color) {
+          m.color = new THREE.Color(
+            obj.name.startsWith('CoreBolt') || obj.name === 'CoreWell'
+              ? '#2a3036'
+              : '#9aa6b2',
+          );
+          m.metalness = 0.94;
+          m.roughness = 0.26;
           if (m.emissive) m.emissiveIntensity = 0;
           steelCore.push(m);
-        } else if (isCoreGlow) {
-          m.emissive = new THREE.Color('#4ec8ff');
-          m.emissiveIntensity = obj.name.includes('Hot') ? 3.2 : 2.2;
-          m.toneMapped = false;
-          glow.push({ m, base: obj.name.includes('Hot') ? 3.0 : 2.0 });
         } else if (isGlow || (m.emissive && m.emissive.r + m.emissive.g + m.emissive.b > 0.02)) {
           m.emissive = new THREE.Color('#4ec8ff');
           m.emissiveIntensity = 0.9;
@@ -81,9 +91,10 @@ export default function ReactorModel({ reducedMotion }) {
           m.roughness = 0.2;
           if (m.emissive) m.emissiveIntensity = 0;
         } else if (isCopper && m.color) {
-          m.color = new THREE.Color('#c07840');
-          m.metalness = 0.92;
-          m.roughness = 0.28;
+          // Thicker look via brighter, shinier copper
+          m.color = new THREE.Color('#d4894a');
+          m.metalness = 0.98;
+          m.roughness = 0.14;
         } else if (m.color) {
           m.color = new THREE.Color('#8a96a3');
           m.metalness = Math.min(1, (m.metalness ?? 0.85) + 0.08);
@@ -135,10 +146,13 @@ export default function ReactorModel({ reducedMotion }) {
         map.coreHousing.push(obj);
       } else if (
         n.includes('Triangle') ||
-        n.includes('CoreGlow') ||
-        n.startsWith('CoreSpoke') ||
-        n.startsWith('CoreLightRing') ||
-        n === 'CoreRim'
+        n.startsWith('CorePlate') ||
+        n.startsWith('CoreWell') ||
+        n.startsWith('CoreGlass') ||
+        n.startsWith('CoreInner') ||
+        n.startsWith('CoreCross') ||
+        n.startsWith('CoreBolt') ||
+        n.includes('CoreTriangle')
       ) {
         map.core.push(obj);
       } else if (n.startsWith('LightRing')) map.emitter.push(obj);
@@ -243,7 +257,7 @@ export default function ReactorModel({ reducedMotion }) {
       if (!obj.userData.basePos) obj.userData.basePos = obj.position.clone();
       const b = obj.userData.basePos;
       const len = Math.hypot(b.x, b.z) || 1;
-      const f = 1 + c.outerShell.radial * 0.34;
+      const f = 1 + c.outerShell.radial * 0.42;
       obj.position.x = (b.x / len) * len * f;
       obj.position.z = (b.z / len) * len * f;
     });

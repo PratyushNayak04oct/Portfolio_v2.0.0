@@ -67,7 +67,7 @@ export default function CustomCursor() {
     <div className="pointer-events-none fixed inset-0 z-[100]" aria-hidden="true">
       <div
         ref={dotRef}
-        className="absolute top-0 left-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_12px_rgba(99,199,217,0.55)]"
+        className="absolute top-0 left-0 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_16px_rgba(99,199,217,0.65)]"
         style={{ willChange: 'transform' }}
       />
       <div

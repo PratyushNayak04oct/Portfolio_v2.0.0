@@ -6,7 +6,7 @@ import { labActions, useLabStore } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import CoreEmblem from '@/components/ui/CoreEmblem';
 
-useGLTF.preload('/models/reactor.glb?v=9');
+useGLTF.preload('/models/reactor.glb?v=10');
 
 const TICK_MS = 4800;
 const CLIMAX_MS = 900;
@@ -228,7 +228,7 @@ export default function LoadingScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[200] ${
+      className={`fixed inset-0 z-[200] overflow-hidden ${
         phase === 'fly' || phase === 'settle' || phase === 'done' || loaded
           ? 'pointer-events-none'
           : ''
@@ -237,10 +237,70 @@ export default function LoadingScreen() {
       aria-live="polite"
       aria-label="Loading laboratory"
     >
-      <div className="absolute inset-0 bg-deepest" style={{ opacity: veilOpacity }} />
+      {/* Cinematic workshop veil */}
+      <div className="absolute inset-0" style={{ opacity: veilOpacity }}>
+        <div className="absolute inset-0 bg-[#05080b]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 55% 50% at 50% 48%, rgba(40,140,220,0.28), transparent 62%), radial-gradient(ellipse 80% 70% at 50% 100%, rgba(20,40,60,0.55), transparent 55%), radial-gradient(ellipse 40% 35% at 18% 22%, rgba(242,140,91,0.12), transparent 70%), radial-gradient(ellipse 35% 30% at 82% 18%, rgba(242,160,80,0.1), transparent 65%)',
+          }}
+        />
+        {/* Warm bokeh orbs */}
+        {[
+          { l: '12%', t: '18%', s: 90, o: 0.18 },
+          { l: '78%', t: '14%', s: 70, o: 0.14 },
+          { l: '88%', t: '62%', s: 110, o: 0.12 },
+          { l: '8%', t: '70%', s: 80, o: 0.1 },
+          { l: '62%', t: '78%', s: 60, o: 0.11 },
+          { l: '28%', t: '82%', s: 50, o: 0.09 },
+        ].map((b, i) => (
+          <span
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: b.l,
+              top: b.t,
+              width: b.s,
+              height: b.s,
+              opacity: b.o * chromeOpacity,
+              background:
+                'radial-gradient(circle, rgba(255,180,90,0.85), rgba(255,120,40,0.15) 45%, transparent 70%)',
+              filter: 'blur(8px)',
+            }}
+          />
+        ))}
+        {/* Fine dust / sparkle field */}
+        <div
+          className="absolute inset-0 opacity-[0.14] mix-blend-screen"
+          style={{
+            backgroundImage:
+              'radial-gradient(1px 1px at 20% 30%, rgba(200,230,255,0.8), transparent), radial-gradient(1px 1px at 70% 40%, rgba(255,200,120,0.6), transparent), radial-gradient(1.2px 1.2px at 40% 70%, rgba(180,220,255,0.7), transparent), radial-gradient(1px 1px at 85% 75%, rgba(255,220,160,0.5), transparent), radial-gradient(1px 1px at 55% 20%, rgba(200,240,255,0.65), transparent)',
+          }}
+        />
+        {/* Soft vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 55% at 50% 48%, transparent 30%, rgba(5,8,11,0.55) 75%, rgba(5,8,11,0.92) 100%)',
+          }}
+        />
+        {/* Core bloom wash */}
+        <div
+          className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            width: `${40 + intensity * 55}vmin`,
+            height: `${40 + intensity * 55}vmin`,
+            background: `radial-gradient(circle, rgba(120,210,255,${0.18 + intensity * 0.35}), rgba(40,140,220,${0.08 + intensity * 0.12}) 40%, transparent 70%)`,
+            filter: 'blur(4px)',
+          }}
+        />
+      </div>
 
       <div
-        className="absolute inset-x-0 top-[15%] flex flex-col items-center"
+        className="absolute inset-x-0 top-[14%] flex flex-col items-center"
         style={{ opacity: chromeOpacity }}
       >
         <p className="font-mono text-tech uppercase tracking-[0.22em] text-ink-muted">
@@ -259,15 +319,15 @@ export default function LoadingScreen() {
 
       {/* Loader under the core */}
       <div
-        className="absolute left-1/2 top-[46%] w-[min(52vw,240px)] -translate-x-1/2"
+        className="absolute left-1/2 top-[46%] w-[min(52vw,260px)] -translate-x-1/2"
         style={{
-          marginTop: coreSize * 0.58 + 28,
+          marginTop: coreSize * 0.58 + 32,
           opacity: loaderOpacity * chromeOpacity,
         }}
       >
-        <div className="h-[2px] w-full overflow-hidden rounded-full bg-line/80">
+        <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10 shadow-[0_0_24px_rgba(99,199,217,0.15)]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-blue via-cyan to-teal transition-[width] duration-150"
+            className="h-full rounded-full bg-gradient-to-r from-blue via-cyan to-teal shadow-[0_0_12px_rgba(99,199,217,0.55)] transition-[width] duration-150"
             style={{ width: `${progress}%` }}
           />
         </div>
