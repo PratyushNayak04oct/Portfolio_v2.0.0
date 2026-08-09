@@ -135,13 +135,14 @@
 }
 
 @utility section-space {
-  padding-block: clamp(6rem, 12vw, 10rem);
+  padding-block: clamp(4.5rem, 10vw, 10rem);
 }
 
 @utility content-grid {
   margin-inline: auto;
+  width: 100%;
   max-width: 1320px;
-  padding-inline: clamp(1.25rem, 4vw, 3rem);
+  padding-inline: clamp(1rem, 4vw, 3rem);
 }
 
 @utility text-hero {
@@ -342,6 +343,97 @@
   50% {
     transform: translateY(-4px);
   }
+}
+
+@keyframes orbitSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbitSpinRev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* Loading core aura — circling energy around the triangle */
+.loader-aura {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.loader-aura__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.loader-aura__ring--a {
+  border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+  box-shadow:
+    0 0 18px color-mix(in srgb, var(--cyan) 25%, transparent),
+    inset 0 0 18px color-mix(in srgb, var(--cyan) 12%, transparent);
+  animation: orbitSpin 10s linear infinite;
+}
+
+.loader-aura__ring--b {
+  inset: 12%;
+  border-color: color-mix(in srgb, var(--orange) 35%, transparent);
+  border-style: dashed;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--orange) 18%, transparent);
+  animation: orbitSpinRev 7s linear infinite;
+}
+
+.loader-aura__ring--c {
+  inset: -10%;
+  border-color: color-mix(in srgb, var(--cyan) 18%, transparent);
+  opacity: 0.7;
+  animation: orbitSpin 16s linear infinite;
+}
+
+.loader-aura__spark {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  margin-top: -3.5px;
+  border-radius: 999px;
+  background: #9ae8ff;
+  box-shadow:
+    0 0 10px rgba(99, 199, 217, 0.9),
+    0 0 22px rgba(99, 199, 217, 0.55);
+}
+
+.loader-aura__spark--warm {
+  background: #ffb070;
+  box-shadow:
+    0 0 10px rgba(242, 140, 91, 0.9),
+    0 0 22px rgba(242, 140, 91, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-aura__ring--a,
+  .loader-aura__ring--b,
+  .loader-aura__ring--c {
+    animation: none;
+  }
+}
+
+/* Safe areas for notched phones */
+.safe-pad-x {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-pad-b {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
 /* Soft cyan sheen — keep solid fill so text never goes black/invisible */

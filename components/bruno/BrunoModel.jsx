@@ -362,7 +362,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
   /* eslint-enable react-hooks/immutability */
 
   return (
-    <group ref={root} position={[0, 0.5, 0]} scale={1.48} rotation={[0, baseYaw, 0]}>
+    <group ref={root} position={[0, 0.48, 0]} scale={1.12} rotation={[0, baseYaw, 0]}>
       {/* —— Muscular chest → tucked waist —— */}
       <group ref={torso}>
         {/* Broad chest / shoulders */}

@@ -55,16 +55,16 @@ export default function Navigation() {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div
-        className={`mx-auto flex max-w-[1320px] items-center justify-between px-[clamp(1.25rem,4vw,3rem)] py-4 transition-all duration-500 ${
+        className={`safe-pad-x mx-auto flex max-w-[1320px] items-center justify-between px-[clamp(1rem,4vw,3rem)] py-3 transition-all duration-500 sm:py-4 ${
           scrolled
-            ? 'glass-panel mt-3 rounded-2xl px-5 shadow-[0_12px_40px_rgba(0,0,0,0.25)] md:mx-6'
+            ? 'glass-panel mt-2 rounded-xl px-3 shadow-[0_12px_40px_rgba(0,0,0,0.25)] sm:mt-3 sm:rounded-2xl sm:px-5 md:mx-6'
             : ''
         }`}
       >
         <a
           href="#hero"
           data-cursor="interactive"
-          className="flex items-center gap-2.5 font-display text-nav font-medium tracking-[0.14em] text-ink"
+          className="flex min-w-0 items-center gap-2 font-display text-[0.7rem] font-medium tracking-[0.12em] text-ink sm:gap-2.5 sm:text-nav sm:tracking-[0.14em]"
           onClick={(e) => onNavClick(e, '#hero')}
         >
           <span
@@ -79,7 +79,7 @@ export default function Navigation() {
           <span>{site.brand}</span>
         </a>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-5 lg:gap-8 md:flex">
           {site.nav.map((item) => {
             const id = item.href.replace('#', '');
             const active = activeSection === id;
@@ -105,15 +105,15 @@ export default function Navigation() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <div className="hidden items-center gap-4 font-mono text-tech uppercase text-ink-muted sm:flex">
+          <div className="hidden items-center gap-3 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-ink-muted sm:flex sm:gap-4 sm:text-tech">
             <span>PWR {Math.round(power)}%</span>
             <span className="flex items-center gap-2">
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                   power >= 100 ? 'bg-teal' : 'bg-cyan'
                 }`}
               />
-              <span className="max-w-[12ch] truncate lg:max-w-none">
+              <span className="max-w-[10ch] truncate md:max-w-[14ch] lg:max-w-none">
                 {reactorStatus}
               </span>
             </span>

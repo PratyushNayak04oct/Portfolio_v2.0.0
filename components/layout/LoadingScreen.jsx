@@ -324,99 +324,61 @@ export default function LoadingScreen() {
             filter: 'blur(4px)',
           }}
         />
-        {/* Orbiting energy rings around core */}
-        <div
-          className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2"
-          style={{ opacity: chromeOpacity }}
-        >
-          {[1, 2, 3].map((ring) => (
-            <span
-              key={ring}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border"
-              style={{
-                width: `${18 + ring * 9 + intensity * 6}vmin`,
-                height: `${18 + ring * 9 + intensity * 6}vmin`,
-                borderColor:
-                  ring === 2
-                    ? `rgba(242,140,91,${0.12 + intensity * 0.18})`
-                    : `rgba(99,199,217,${0.1 + intensity * 0.16})`,
-                boxShadow:
-                  ring === 2
-                    ? `0 0 24px rgba(242,140,91,${0.12 + intensity * 0.15})`
-                    : `0 0 20px rgba(99,199,217,${0.1 + intensity * 0.12})`,
-                animation: `softPulse ${3.5 + ring * 0.8}s ease-in-out infinite`,
-                animationDelay: `${ring * 0.2}s`,
-                transform: `translate(-50%, -50%) rotateX(${58 + ring * 4}deg)`,
-              }}
-            />
-          ))}
-        </div>
       </div>
 
+      {/* Quiet status — single clean line */}
       <div
-        className="absolute inset-x-0 top-[11%] flex flex-col items-center gap-3"
+        className="absolute inset-x-0 top-[max(1.5rem,env(safe-area-inset-top))] flex justify-center px-4 pt-8 sm:pt-10"
         style={{ opacity: chromeOpacity }}
       >
-        <p className="font-display text-sub font-medium tracking-[0.18em] text-ink">
-          PRATYUSH®
+        <p className="text-center font-mono text-[0.65rem] uppercase tracking-[0.28em] text-ink-secondary sm:text-tech sm:tracking-[0.22em]">
+          Midnight Lab
+          <span className="mx-2 text-cyan/50">·</span>
+          Core Ignition
         </p>
-        <p className="font-mono text-tech uppercase tracking-[0.22em] text-cyan">
-          Midnight Lab // Core Ignition
-        </p>
-        <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
-          {['REACTOR', 'PALLADIUM', 'B.R.U.N.O.', 'SYSTEMS'].map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-tech uppercase tracking-[0.14em] text-ink-secondary"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
       </div>
 
-      {/* Side telemetry panels */}
-      <div
-        className="pointer-events-none absolute top-[28%] hidden flex-col gap-3 md:left-10 md:flex lg:left-16"
-        style={{ opacity: chromeOpacity * 0.85 }}
-      >
-        {['PWR 12%', 'TEMP STABLE', 'LINK OK'].map((line) => (
-          <span
-            key={line}
-            className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
-          >
-            {line}
-          </span>
-        ))}
-      </div>
-      <div
-        className="pointer-events-none absolute top-[28%] hidden flex-col items-end gap-3 md:right-10 md:flex lg:right-16"
-        style={{ opacity: chromeOpacity * 0.85 }}
-      >
-        {['SEQ 01', 'CORE LOCK', 'IGNITE'].map((line) => (
-          <span
-            key={line}
-            className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
-          >
-            {line}
-          </span>
-        ))}
-      </div>
-
-      {/* Flying / pulsing core emblem */}
+      {/* Flying / pulsing core + circling aura */}
       <div
         ref={coreRef}
         className="absolute left-1/2 top-[46%] will-change-transform"
         style={{ transform: 'translate(-50%, -50%)' }}
       >
-        <CoreEmblem size={coreSize} glow={intensity} triangleOnly />
+        <div
+          className="relative flex items-center justify-center"
+          style={{ width: coreSize, height: coreSize }}
+        >
+          <div
+            className="loader-aura"
+            style={{
+              width: coreSize * 1.85,
+              height: coreSize * 1.85,
+              opacity:
+                phase === 'fly' || phase === 'settle' || phase === 'done'
+                  ? 0
+                  : Math.max(chromeOpacity, 0.35),
+              transition: 'opacity 0.45s ease, width 0.2s ease, height 0.2s ease',
+            }}
+          >
+            <span className="loader-aura__ring loader-aura__ring--c" />
+            <span className="loader-aura__ring loader-aura__ring--a">
+              <span className="loader-aura__spark" />
+            </span>
+            <span className="loader-aura__ring loader-aura__ring--b">
+              <span className="loader-aura__spark loader-aura__spark--warm" />
+            </span>
+          </div>
+          <div className="relative z-[1]">
+            <CoreEmblem size={coreSize} glow={intensity} triangleOnly />
+          </div>
+        </div>
       </div>
 
       {/* Loader under the core */}
       <div
-        className="absolute left-1/2 top-[46%] w-[min(52vw,260px)] -translate-x-1/2"
+        className="absolute left-1/2 top-[46%] w-[min(78vw,280px)] -translate-x-1/2 px-1"
         style={{
-          marginTop: coreSize * 0.58 + 32,
+          marginTop: coreSize * 0.58 + 28,
           opacity: loaderOpacity * chromeOpacity,
         }}
       >
@@ -426,7 +388,7 @@ export default function LoadingScreen() {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="mt-3 flex items-center justify-between font-mono text-tech uppercase tracking-[0.16em] text-ink-muted">
+        <div className="mt-3 flex items-center justify-between font-mono text-[0.62rem] uppercase tracking-[0.16em] text-ink-secondary sm:text-tech">
           <span>
             {phase === 'tick'
               ? 'Charging'

@@ -3,7 +3,7 @@ import { site } from '@/data/site';
 export default function Footer() {
   return (
     <footer className="relative z-20 border-t border-line/60 bg-deepest/80">
-      <div className="mx-auto grid max-w-[1400px] gap-10 px-5 py-16 md:grid-cols-12 md:px-8">
+          <div className="content-grid grid gap-8 py-12 sm:gap-10 sm:py-16 md:grid-cols-12">
         <div className="md:col-span-5">
           <p className="font-display text-sub text-ink">{site.brand}</p>
           <p className="mt-3 font-mono text-tech uppercase text-ink-muted">

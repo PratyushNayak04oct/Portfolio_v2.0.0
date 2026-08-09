@@ -103,20 +103,20 @@ export default function Hero() {
     <section
       id="hero"
       ref={root}
-      className="relative z-20 flex min-h-[100svh] items-center pt-28 pb-20"
+      className="relative z-20 flex min-h-[100svh] items-center pt-24 pb-16 sm:pt-28 sm:pb-20"
     >
-      <div className="content-grid grid w-full grid-cols-12 gap-10 lg:gap-12">
+      <div className="content-grid grid w-full grid-cols-12 gap-6 sm:gap-10 lg:gap-12">
         <div className="copy-above-reactor copy-plate col-span-12 flex flex-col justify-center lg:col-span-6">
           <p
             data-hero="meta"
-            className="text-depth-soft font-mono text-tech uppercase tracking-[0.18em] text-ink-secondary opacity-0"
+            className="text-depth-soft font-mono text-[0.62rem] uppercase tracking-[0.16em] text-ink-secondary opacity-0 sm:text-tech sm:tracking-[0.18em]"
           >
             LAB.COORD // 00.01 — MIDNIGHT
           </p>
 
           <p
             data-hero="brand"
-            className="text-depth mt-8 font-display text-sub font-medium tracking-[0.08em] text-ink opacity-0"
+            className="text-depth mt-5 font-display text-[clamp(1.15rem,3.5vw,1.75rem)] font-medium tracking-[0.06em] text-ink opacity-0 sm:mt-8 sm:tracking-[0.08em]"
             style={{ color: 'var(--text-primary)', WebkitTextFillColor: 'var(--text-primary)' }}
           >
             {site.fullName}
@@ -124,13 +124,13 @@ export default function Hero() {
 
           <p
             data-hero="role"
-            className="text-depth-soft mt-3 font-mono text-tech uppercase tracking-[0.14em] text-cyan opacity-0"
+            className="text-depth-soft mt-2 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-cyan opacity-0 sm:mt-3 sm:text-tech sm:tracking-[0.14em]"
           >
             {site.roles.join(' · ')}
           </p>
 
           <h1
-            className="text-depth mt-10 font-display font-medium text-ink"
+            className="text-depth mt-7 font-display font-medium text-ink sm:mt-10"
             style={{ color: 'var(--text-primary)', WebkitTextFillColor: 'var(--text-primary)' }}
           >
             <span data-hero="line" className="block text-hero will-change-transform opacity-0">
@@ -163,7 +163,7 @@ export default function Hero() {
 
         <div
           data-hero="reactor-slot"
-          className="relative col-span-12 flex min-h-[40vh] items-center justify-center opacity-0 lg:col-span-6 lg:min-h-[65vh]"
+          className="relative col-span-12 flex min-h-[32vh] items-center justify-center opacity-0 sm:min-h-[40vh] lg:col-span-6 lg:min-h-[65vh]"
         >
           <div data-hero="ambient" className="absolute inset-0 opacity-0">
             <div

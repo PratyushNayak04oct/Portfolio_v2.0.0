@@ -16,7 +16,7 @@ function BrunoCanvas({ state }) {
   return (
     <Canvas
       dpr={isMobile ? [1, 1.2] : [1, 1.4]}
-      camera={{ position: [1.85, 1.15, 2.55], fov: 28 }}
+      camera={{ position: [1.85, 1.15, 2.55], fov: 30 }}
       gl={{
         antialias: !isMobile,
         alpha: true,
@@ -51,9 +51,13 @@ export default function BrunoScene() {
 
   return (
     <div
-      className={`pointer-events-none fixed bottom-3 right-3 z-30 w-[200px] transition-opacity duration-700 ease-out md:bottom-5 md:right-5 md:w-[260px] ${
+      className={`pointer-events-none fixed z-30 w-[132px] transition-opacity duration-700 ease-out safe-pad-b sm:w-[150px] md:w-[180px] ${
         loaded ? 'opacity-100' : 'opacity-0'
       }`}
+      style={{
+        right: 'max(0.75rem, env(safe-area-inset-right))',
+        bottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+      }}
     >
       <button
         type="button"
@@ -71,14 +75,14 @@ export default function BrunoScene() {
         className="pointer-events-auto group relative block w-full overflow-visible text-left"
       >
         <span
-          className={`pointer-events-none absolute -top-11 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan/35 bg-secondary/92 px-3 py-1.5 font-mono text-tech uppercase tracking-[0.14em] text-cyan shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all duration-300 ${
+          className={`pointer-events-none absolute -top-9 left-1/2 z-10 max-w-[90vw] -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan/35 bg-secondary/92 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-cyan shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all duration-300 sm:-top-10 sm:px-3 sm:py-1.5 sm:text-tech sm:tracking-[0.14em] ${
             hello ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
           }`}
         >
           Hi, My Name is B.R.U.N.O.
         </span>
 
-        <div className="relative h-[170px] md:h-[220px]">
+        <div className="relative h-[110px] sm:h-[130px] md:h-[150px]">
           {webgl ? (
             <BrunoCanvas state={state} />
           ) : (
@@ -86,7 +90,7 @@ export default function BrunoScene() {
               className="flex h-full items-end justify-center pb-2"
               aria-hidden="true"
             >
-              <div className="h-20 w-24 rounded-t-[40%] border border-cyan/25 bg-gradient-to-b from-surface/80 to-transparent" />
+              <div className="h-14 w-16 rounded-t-[40%] border border-cyan/25 bg-gradient-to-b from-surface/80 to-transparent sm:h-16 sm:w-20" />
             </div>
           )}
         </div>

@@ -49,7 +49,7 @@ export default function Lab() {
           />
         </div>
 
-        <div className="mt-16 grid grid-cols-12 gap-10 md:mt-20 lg:gap-14">
+        <div className="mt-12 grid grid-cols-12 gap-8 sm:mt-16 sm:gap-10 md:mt-20 lg:gap-14">
           <div className="col-span-12 lg:col-span-5">
             <ul className="space-y-3">
               {experiments.map((exp) => {

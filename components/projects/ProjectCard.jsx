@@ -8,7 +8,7 @@ export default function ProjectCard({ project, index }) {
       href={`/work/${project.slug}`}
       data-cursor="project"
       data-cursor-label="VIEW PROJECT ↗"
-      className="group relative flex h-full min-w-[88vw] flex-col justify-between overflow-hidden rounded-2xl border border-white/5 bg-secondary/25 p-7 transition-[border-color,transform,background] duration-500 ease-out hover:border-cyan/35 hover:bg-secondary/40 md:min-w-[40vw] md:p-9"
+      className="group relative flex h-full min-w-[min(88vw,22rem)] flex-col justify-between overflow-hidden rounded-2xl border border-white/5 bg-secondary/25 p-5 transition-[border-color,transform,background] duration-500 ease-out hover:border-cyan/35 hover:bg-secondary/40 sm:min-w-[70vw] sm:p-7 md:min-w-[40vw] md:p-9 lg:min-w-[36vw]"
     >
       <div>
         <p className="font-mono text-tech uppercase tracking-[0.16em] text-ink-secondary">

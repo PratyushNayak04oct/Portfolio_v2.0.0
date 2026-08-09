@@ -50,9 +50,9 @@ export default function Contact() {
     <section
       id="contact"
       ref={root}
-      className="relative z-20 flex min-h-[92svh] items-center section-space"
+      className="relative z-20 flex min-h-[min(92svh,920px)] items-center section-space"
     >
-      <div className="content-grid grid w-full grid-cols-12 gap-10 lg:gap-12">
+      <div className="content-grid grid w-full grid-cols-12 gap-8 sm:gap-10 lg:gap-12">
         <div className="copy-above-reactor copy-plate col-span-12 lg:col-span-8">
           <p
             data-cta

@@ -9,7 +9,7 @@ export default function About() {
 
   return (
     <section id="about" className="relative z-20 section-space">
-      <div className="content-grid grid grid-cols-12 gap-x-8 gap-y-14 lg:gap-x-12">
+      <div className="content-grid grid grid-cols-12 gap-x-6 gap-y-10 sm:gap-x-8 sm:gap-y-14 lg:gap-x-12">
         <div
           ref={parallax}
           className="copy-above-reactor copy-plate col-span-12 will-change-transform lg:col-span-7"
@@ -20,7 +20,7 @@ export default function About() {
             mode="words"
             delay={0.12}
             stagger={0.028}
-            className="text-depth-soft mt-10 max-w-xl text-sub leading-relaxed text-ink-secondary"
+            className="text-depth-soft mt-6 max-w-xl text-[clamp(1.05rem,2.4vw,1.75rem)] leading-relaxed text-ink-secondary sm:mt-10 sm:text-sub"
           >
             From enterprise applications to interactive web experiences, I enjoy turning complex problems into intuitive digital products.
           </AnimatedText>

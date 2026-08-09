@@ -71,7 +71,7 @@ export default function Experience() {
 
         <div
           ref={listRef}
-          className="relative mt-20 grid grid-cols-12 gap-x-8 gap-y-16 md:mt-24"
+          className="relative mt-14 grid grid-cols-12 gap-x-6 gap-y-12 sm:mt-20 sm:gap-x-8 sm:gap-y-16 md:mt-24"
         >
           <div className="absolute top-0 bottom-0 left-4 w-px bg-line/70 md:left-1/2">
             <div
