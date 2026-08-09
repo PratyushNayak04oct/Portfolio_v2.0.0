@@ -69,15 +69,15 @@ export default function BackgroundEnvironment() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
     >
-      {/* Solid base — a bit more opaque so patterns stay quiet */}
+      {/* Solid base — +20% opacity so patterns stay quieter */}
       <div className="absolute inset-0 bg-deepest" />
-      <div className="absolute inset-0 bg-primary/92" />
-      <div className="absolute inset-0 bg-deepest/40" />
+      <div className="absolute inset-0 bg-primary/[0.98]" />
+      <div className="absolute inset-0 bg-deepest/55" />
 
       {/* Soft atmosphere — muted */}
       <div
         ref={layerRef}
-        className="absolute inset-[-16%] will-change-transform opacity-40"
+        className="absolute inset-[-16%] will-change-transform opacity-32"
         style={{
           background:
             'radial-gradient(ellipse 75% 60% at 74% 30%, rgba(90,160,255,0.09), transparent 70%), radial-gradient(ellipse 60% 52% at 14% 78%, rgba(60,200,180,0.06), transparent 68%), radial-gradient(ellipse 50% 45% at 50% 50%, rgba(180,210,240,0.03), transparent 75%)',

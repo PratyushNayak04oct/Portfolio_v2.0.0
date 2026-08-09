@@ -1,12 +1,12 @@
 export const experience = [
   {
     year: '2026',
-    role: 'Systems Engineer',
+    role: 'Application Developer',
     company: 'Enterprise Systems',
     summary:
       'Designing and delivering reliable enterprise applications with Oracle, SQL, and modern application stacks.',
     highlights: [
-      'Enterprise systems architecture',
+      'Enterprise application architecture',
       'Oracle & SQL development',
       'Application development lifecycle',
       'Performance and maintainability focus',

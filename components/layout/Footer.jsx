@@ -21,7 +21,7 @@ export default function Footer() {
                   data-cursor="interactive"
                   target={link.external ? '_blank' : undefined}
                   rel={link.external ? 'noopener noreferrer' : undefined}
-                  className="font-sans text-nav uppercase text-ink-secondary transition-colors duration-300 hover:text-ink"
+                  className="micro-lift link-underline font-sans text-nav uppercase text-ink-secondary hover:text-ink"
                 >
                   {link.label}
                 </a>

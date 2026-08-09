@@ -53,6 +53,12 @@ export default function Hero() {
           '-=0.2',
         )
         .fromTo(
+          '[data-hero="role"]',
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0, duration: duration.text },
+          '-=0.35',
+        )
+        .fromTo(
           '[data-hero="line"]',
           { autoAlpha: 0, y: 36 },
           { autoAlpha: 1, y: 0, duration: duration.text, stagger: 0.14 },
@@ -98,12 +104,15 @@ export default function Hero() {
 
           <p
             data-hero="brand"
-            className="text-depth mt-8 font-display text-sub font-medium tracking-[0.1em] text-ink opacity-0"
+            className="text-depth text-shimmer mt-8 font-display text-sub font-medium tracking-[0.08em] text-ink opacity-0"
           >
-            {site.brand}
+            {site.fullName}
           </p>
 
-          <p className="text-depth-soft mt-3 font-mono text-tech uppercase tracking-[0.14em] text-cyan opacity-90">
+          <p
+            data-hero="role"
+            className="text-depth-soft mt-3 font-mono text-tech uppercase tracking-[0.14em] text-cyan opacity-0"
+          >
             {site.roles.join(' · ')}
           </p>
 
@@ -140,7 +149,6 @@ export default function Hero() {
           data-hero="reactor-slot"
           className="relative col-span-12 flex min-h-[40vh] items-center justify-center opacity-0 lg:col-span-6 lg:min-h-[65vh]"
         >
-          {/* Ambient glow only — reactor is a full-bleed transparent WebGL layer */}
           <div data-hero="ambient" className="absolute inset-0 opacity-0">
             <div
               className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"

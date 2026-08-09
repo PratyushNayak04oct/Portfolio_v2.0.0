@@ -1,5 +1,6 @@
 export const BRUNO_STATES = {
   Idle: 'Idle',
+  Wag: 'Wag',
   Walk: 'Walk',
   Run: 'Run',
   Sit: 'Sit',
@@ -7,24 +8,19 @@ export const BRUNO_STATES = {
   Curious: 'Curious',
   Bark: 'Bark',
   Jump: 'Jump',
-  FrontFlip: 'FrontFlip',
   Excited: 'Excited',
-  Sleep: 'Sleep',
-  Inspect: 'Inspect',
+  Spin: 'Spin',
 };
 
-/** Section → preferred ambient state (not constantly animating) */
-export const brunoSectionStates = {
-  about: BRUNO_STATES.Walk,
-  experience: BRUNO_STATES.Inspect,
-  projects: BRUNO_STATES.Curious,
-  lab: BRUNO_STATES.Excited,
-  contact: BRUNO_STATES.Sit,
-};
+/** Happy ambient — always a soft wag */
+export const brunoAmbient = BRUNO_STATES.Wag;
 
-/** Hover/tap interaction cycle */
-export const brunoInteractionCycle = [
-  BRUNO_STATES.Look,
-  BRUNO_STATES.FrontFlip,
+/** Random hover / tap actions */
+export const brunoHoverActions = [
   BRUNO_STATES.Bark,
+  BRUNO_STATES.Jump,
+  BRUNO_STATES.Excited,
+  BRUNO_STATES.Look,
+  BRUNO_STATES.Spin,
+  BRUNO_STATES.Curious,
 ];

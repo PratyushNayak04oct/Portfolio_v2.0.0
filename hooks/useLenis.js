@@ -24,14 +24,16 @@ export function useLenis() {
     const { gsap, ScrollTrigger } = getGsap();
 
     const lenis = new Lenis({
-      lerp: 0.068,
+      lerp: 0.055,
       smoothWheel: true,
       syncTouch: false,
-      touchMultiplier: 1.1,
-      wheelMultiplier: 0.88,
+      touchMultiplier: 1.05,
+      wheelMultiplier: 0.82,
     });
 
     lenisInstance = lenis;
+    // Ensure reload lands at top even if browser restored scroll
+    lenis.scrollTo(0, { immediate: true });
 
     lenis.on('scroll', ScrollTrigger.update);
 

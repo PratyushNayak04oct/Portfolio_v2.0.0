@@ -10,6 +10,7 @@ import Footer from '@/components/layout/Footer';
 import SceneErrorBoundary from '@/components/layout/SceneErrorBoundary';
 import { useSectionProgress } from '@/hooks/useSectionProgress';
 import { useLenis } from '@/hooks/useLenis';
+import { useScrollReset } from '@/hooks/useScrollReset';
 import { useLabStore } from '@/lib/labStore';
 import ReactorFallback from '@/components/reactor/ReactorFallback';
 
@@ -23,6 +24,7 @@ const BrunoScene = dynamic(() => import('@/components/bruno/BrunoScene'), {
 });
 
 function ScrollRuntime() {
+  useScrollReset();
   useLenis();
   useSectionProgress();
   return null;

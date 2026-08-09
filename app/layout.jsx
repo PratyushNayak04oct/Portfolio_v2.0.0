@@ -45,6 +45,9 @@ export const metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+  },
   alternates: {
     canonical: site.url,
   },
@@ -55,7 +58,7 @@ export default function RootLayout({ children }) {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: site.name,
-    jobTitle: 'Systems Engineer & Creative Developer',
+    jobTitle: 'Creative Developer',
     url: site.url,
     sameAs: [site.social.github, site.social.linkedin, site.social.upwork],
   };

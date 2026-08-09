@@ -32,20 +32,38 @@ export default function AnimatedText({
 
     const from =
       mode === 'blur'
-        ? { autoAlpha: 0, y: 16, filter: 'blur(8px)' }
-        : { autoAlpha: 0, y: 28 };
+        ? { autoAlpha: 0, y: 18, filter: 'blur(8px)' }
+        : mode === 'rise'
+          ? { autoAlpha: 0, y: 40, rotateX: 8 }
+          : { autoAlpha: 0, y: 28 };
 
     const to =
       mode === 'blur'
-        ? { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: duration.text, ease: ease.soft, delay }
-        : { autoAlpha: 1, y: 0, duration: duration.text, ease: ease.soft, delay };
+        ? {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: duration.text,
+            ease: ease.soft,
+            delay,
+          }
+        : mode === 'rise'
+          ? {
+              autoAlpha: 1,
+              y: 0,
+              rotateX: 0,
+              duration: duration.text,
+              ease: ease.soft,
+              delay,
+            }
+          : { autoAlpha: 1, y: 0, duration: duration.text, ease: ease.soft, delay };
 
-    gsap.set(el, from);
+    gsap.set(el, { ...from, transformPerspective: 600 });
     const tween = gsap.to(el, {
       ...to,
       scrollTrigger: {
         trigger: el,
-        start: 'top 85%',
+        start: 'top 88%',
         once,
       },
     });

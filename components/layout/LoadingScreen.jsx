@@ -6,14 +6,14 @@ import { labActions, useLabStore } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import CoreEmblem from '@/components/ui/CoreEmblem';
 
-useGLTF.preload('/models/reactor.glb?v=10');
+useGLTF.preload('/models/reactor.glb?v=12');
 
-const TICK_MS = 4800;
-const CLIMAX_MS = 900;
-const REVEAL_MS = 700;
-const FLY_MS = 2000;
-const SETTLE_MS = 420;
-const FAILSAFE_MS = 14000;
+const TICK_MS = 5200;
+const CLIMAX_MS = 1050;
+const REVEAL_MS = 850;
+const FLY_MS = 2200;
+const SETTLE_MS = 500;
+const FAILSAFE_MS = 16000;
 
 function easeInCubic(t) {
   return t * t * t;
@@ -314,7 +314,7 @@ export default function LoadingScreen() {
         className="absolute left-1/2 top-[46%] will-change-transform"
         style={{ transform: 'translate(-50%, -50%)' }}
       >
-        <CoreEmblem size={coreSize} glow={intensity} />
+        <CoreEmblem size={coreSize} glow={intensity} triangleOnly />
       </div>
 
       {/* Loader under the core */}

@@ -89,7 +89,7 @@ export default function Navigation() {
                 href={item.href}
                 data-cursor="interactive"
                 onClick={(e) => onNavClick(e, item.href)}
-                className={`group relative font-sans text-nav uppercase tracking-[0.14em] transition-colors duration-300 ${
+                className={`group relative font-sans text-nav uppercase tracking-[0.14em] transition-all duration-300 micro-lift ${
                   active ? 'text-ink' : 'text-ink-secondary hover:text-ink'
                 }`}
               >

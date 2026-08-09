@@ -57,10 +57,12 @@ function ReactorRig({ reducedMotion }) {
 function SceneContent({ reducedMotion, lowPower }) {
   return (
     <>
-      <ambientLight intensity={0.62} color="#c8d8e8" />
-      <hemisphereLight intensity={0.5} color="#e8f0f6" groundColor="#081018" />
-      <directionalLight position={[2.5, 3, 5]} intensity={1.15} color="#ffffff" />
-      <directionalLight position={[-2.5, 1, 3]} intensity={0.4} color="#7aa8c8" />
+      <ambientLight intensity={0.58} color="#d8dde4" />
+      <hemisphereLight intensity={0.48} color="#efe6dc" groundColor="#081018" />
+      <directionalLight position={[2.5, 3, 5]} intensity={1.2} color="#fff6ee" />
+      {/* Warm fill keeps polished copper from reading blue under cool key light */}
+      <directionalLight position={[-2.5, 1.4, 3]} intensity={0.55} color="#ffb280" />
+      <directionalLight position={[0.4, -1.2, 2.2]} intensity={0.22} color="#ffd0a8" />
 
       <ReactorRig reducedMotion={reducedMotion} />
 

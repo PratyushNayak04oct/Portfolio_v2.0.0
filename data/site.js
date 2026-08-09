@@ -1,11 +1,12 @@
 export const site = {
-  name: 'Pratyush',
+  name: 'Pratyush Nayak',
   brand: 'PRATYUSH®',
-  title: 'Pratyush — Systems Engineer & Creative Developer',
+  fullName: 'Pratyush Nayak',
+  title: 'Pratyush Nayak — Creative Developer',
   description:
-    'Interactive digital portfolio of Pratyush — systems engineer and creative developer building digital systems and experiences that feel alive.',
+    'Interactive digital portfolio of Pratyush Nayak — creative developer building digital systems and experiences that feel alive.',
   url: 'https://pratyush.dev',
-  roles: ['SYSTEMS ENGINEER', 'CREATIVE DEVELOPER'],
+  roles: ['CREATIVE DEVELOPER'],
   email: 'hello@pratyush.dev',
   social: {
     github: 'https://github.com',

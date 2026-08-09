@@ -27,6 +27,7 @@ export default function SectionHeading({
       ) : null}
       <AnimatedText
         as="h2"
+        mode="rise"
         className="text-depth font-display text-section font-medium text-ink"
       >
         {title}

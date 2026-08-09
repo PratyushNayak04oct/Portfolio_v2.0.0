@@ -32,14 +32,14 @@ export default function About() {
                 as="p"
                 className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
               >
-                Systems Engineer
+                Creative Developer
               </AnimatedText>
               <AnimatedText
                 as="p"
                 delay={0.08}
                 className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
               >
-                Creative Developer
+                Interactive Experiences
               </AnimatedText>
               <AnimatedText
                 as="p"
