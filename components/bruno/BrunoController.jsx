@@ -6,7 +6,7 @@ import { labActions } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 /**
- * Minimal companion: happy wag, faster wag + bark on hover, flip on tap.
+ * Minimal companion: happy wag, faster wag + bark on hover/tap (no flip).
  */
 export function useBrunoController() {
   const reduced = usePrefersReducedMotion();
@@ -47,10 +47,10 @@ export function useBrunoController() {
     if (reduced || busy.current) return;
     busy.current = true;
     if (timer.current) window.clearTimeout(timer.current);
-    setState(BRUNO_STATES.Flip);
-    labActions.setBrunoState(BRUNO_STATES.Flip);
-    labActions.setBrunoStatus('FLIP');
-    timer.current = window.setTimeout(returnHappy, 1600);
+    setState(BRUNO_STATES.Bark);
+    labActions.setBrunoState(BRUNO_STATES.Bark);
+    labActions.setBrunoStatus('BARK');
+    timer.current = window.setTimeout(returnHappy, 900);
   }, [reduced, returnHappy]);
 
   return { state, onHoverStart, onHoverEnd, onTap };

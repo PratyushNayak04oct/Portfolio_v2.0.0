@@ -51,7 +51,7 @@ export default function BrunoScene() {
 
   return (
     <div
-      className={`pointer-events-none fixed z-30 w-[132px] transition-opacity duration-700 ease-out safe-pad-b sm:w-[150px] md:w-[180px] ${
+      className={`pointer-events-none fixed z-30 w-[150px] transition-opacity duration-700 ease-out safe-pad-b sm:w-[172px] md:w-[210px] ${
         loaded ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
@@ -82,7 +82,7 @@ export default function BrunoScene() {
           Hi, My Name is B.R.U.N.O.
         </span>
 
-        <div className="relative h-[110px] sm:h-[130px] md:h-[150px]">
+        <div className="relative h-[128px] sm:h-[150px] md:h-[175px]">
           {webgl ? (
             <BrunoCanvas state={state} />
           ) : (

@@ -357,13 +357,15 @@
   }
 }
 
-/* Loading core aura — circling energy around the triangle */
+/* Loading core aura — transform-only, GPU-friendly */
 .loader-aura {
   position: absolute;
   left: 50%;
   top: 50%;
-  translate: -50% -50%;
+  transform: translate3d(-50%, -50%, 0);
   pointer-events: none;
+  contain: layout paint;
+  will-change: transform, opacity;
 }
 
 .loader-aura__ring {
@@ -371,51 +373,60 @@
   inset: 0;
   border-radius: 999px;
   border: 1px solid transparent;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .loader-aura__ring--a {
-  border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
-  box-shadow:
-    0 0 18px color-mix(in srgb, var(--cyan) 25%, transparent),
-    inset 0 0 18px color-mix(in srgb, var(--cyan) 12%, transparent);
-  animation: orbitSpin 10s linear infinite;
+  border-color: rgba(99, 199, 217, 0.42);
+  box-shadow: 0 0 12px rgba(99, 199, 217, 0.18);
+  animation: orbitSpin 12s linear infinite;
 }
 
 .loader-aura__ring--b {
   inset: 12%;
-  border-color: color-mix(in srgb, var(--orange) 35%, transparent);
+  border-color: rgba(242, 140, 91, 0.32);
   border-style: dashed;
-  box-shadow: 0 0 14px color-mix(in srgb, var(--orange) 18%, transparent);
-  animation: orbitSpinRev 7s linear infinite;
+  box-shadow: 0 0 10px rgba(242, 140, 91, 0.12);
+  animation: orbitSpinRev 9s linear infinite;
 }
 
 .loader-aura__ring--c {
   inset: -10%;
-  border-color: color-mix(in srgb, var(--cyan) 18%, transparent);
-  opacity: 0.7;
-  animation: orbitSpin 16s linear infinite;
+  border-color: rgba(99, 199, 217, 0.16);
+  opacity: 0.65;
+  animation: orbitSpin 18s linear infinite;
+}
+
+/* During climax: slower / lighter so core pulse stays smooth */
+.loader-aura--calm .loader-aura__ring--a {
+  animation-duration: 18s;
+  box-shadow: none;
+}
+.loader-aura--calm .loader-aura__ring--b {
+  animation-duration: 14s;
+  box-shadow: none;
+}
+.loader-aura--calm .loader-aura__ring--c {
+  animation-duration: 22s;
 }
 
 .loader-aura__spark {
   position: absolute;
   top: 0;
   left: 50%;
-  width: 7px;
-  height: 7px;
-  margin-left: -3.5px;
-  margin-top: -3.5px;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
   border-radius: 999px;
   background: #9ae8ff;
-  box-shadow:
-    0 0 10px rgba(99, 199, 217, 0.9),
-    0 0 22px rgba(99, 199, 217, 0.55);
+  box-shadow: 0 0 8px rgba(99, 199, 217, 0.7);
 }
 
 .loader-aura__spark--warm {
   background: #ffb070;
-  box-shadow:
-    0 0 10px rgba(242, 140, 91, 0.9),
-    0 0 22px rgba(242, 140, 91, 0.5);
+  box-shadow: 0 0 8px rgba(242, 140, 91, 0.65);
 }
 
 @media (prefers-reduced-motion: reduce) {

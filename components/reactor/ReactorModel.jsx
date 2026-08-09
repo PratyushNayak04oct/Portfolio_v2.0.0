@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=17';
+const MODEL_URL = '/models/reactor.glb?v=18';
 
 /** Shiny brown-red copper — bright metallic with gold sheen */
 function makeLustrousCopper(source) {
@@ -78,8 +78,17 @@ export default function ReactorModel({ reducedMotion }) {
     const steelCore = [];
     c.traverse((obj) => {
       if (!obj.isMesh) return;
-      // Remove the three loose cables poking out of the reactor
+      // Remove loose cables + a few rings (declutter); gold rings stay
       if (/^Cable[_-]?\d*$/i.test(obj.name) || obj.name.startsWith('Cable')) {
+        obj.visible = false;
+        return;
+      }
+      if (
+        obj.name === 'Ring02' ||
+        obj.name === 'LightRingMid' ||
+        obj.name === 'PerforatedInnerRing' ||
+        obj.name === 'MagneticRing'
+      ) {
         obj.visible = false;
         return;
       }
@@ -119,19 +128,21 @@ export default function ReactorModel({ reducedMotion }) {
             /coilwire|copper|winding/i.test(obj.name));
         const isGold =
           !isCopper &&
-          (obj.name.startsWith('BallJoint') ||
+          (obj.name.startsWith('GoldRing') ||
+            obj.name.startsWith('BallJoint') ||
             obj.name.startsWith('Screw') ||
             name.includes('gold') ||
             name.includes('brass'));
         const isSilver =
           !isCopper &&
           !isGold &&
-          (obj.name.startsWith('Ring') ||
+          ((obj.name.startsWith('Ring') && !obj.name.startsWith('GoldRing')) ||
             obj.name.startsWith('Interconnect') ||
             obj.name.startsWith('CagePost') ||
             name.includes('silver'));
         const isGlow =
           !isCopper &&
+          !isGold &&
           (name.includes('glow') ||
             name.includes('acrylic') ||
             obj.name.includes('LightRing') ||
@@ -231,9 +242,10 @@ export default function ReactorModel({ reducedMotion }) {
         n.startsWith('DetailWire')
       ) {
         map.outerShell.push(obj);
-      } else if (n === 'Ring01') map.ring01.push(obj);
+      } else if (n === 'Ring01' || n === 'GoldRing_Outer') map.ring01.push(obj);
       else if (n === 'Ring02') map.ring02.push(obj);
-      else if (n === 'Ring03') map.ring03.push(obj);
+      else if (n === 'Ring03' || n === 'GoldRing_Inner') map.ring03.push(obj);
+      else if (n === 'GoldRing_Halo') map.emitter.push(obj);
       else if (n.startsWith('CoolingFin')) map.coolingSystem.push(obj);
       else if (n.startsWith('Magnetic')) map.magneticContainment.push(obj);
       else if (n.startsWith('Conduit')) map.energyConduits.push(obj);
