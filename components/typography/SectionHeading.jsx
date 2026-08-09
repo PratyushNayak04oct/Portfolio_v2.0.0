@@ -13,19 +13,21 @@ export default function SectionHeading({
     align === 'center' ? 'text-center items-center' : 'text-left items-start';
 
   return (
-    <div className={`flex flex-col gap-4 ${alignClass} ${className}`}>
+    <div
+      className={`copy-above-reactor flex flex-col gap-4 ${alignClass} ${className}`}
+    >
       {eyebrow ? (
         <AnimatedText
           as="p"
           mode="blur"
-          className="font-mono text-tech uppercase text-cyan"
+          className="text-depth-soft font-mono text-tech uppercase text-cyan"
         >
           {eyebrow}
         </AnimatedText>
       ) : null}
       <AnimatedText
         as="h2"
-        className="font-display text-section font-medium text-ink"
+        className="text-depth font-display text-section font-medium text-ink"
       >
         {title}
       </AnimatedText>
@@ -33,7 +35,7 @@ export default function SectionHeading({
         <AnimatedText
           as="p"
           delay={0.1}
-          className="max-w-xl text-ink-secondary"
+          className="text-depth-soft max-w-xl text-ink-secondary"
         >
           {subtitle}
         </AnimatedText>

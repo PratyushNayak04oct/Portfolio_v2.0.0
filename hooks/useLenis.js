@@ -24,11 +24,11 @@ export function useLenis() {
     const { gsap, ScrollTrigger } = getGsap();
 
     const lenis = new Lenis({
-      lerp: 0.075,
+      lerp: 0.068,
       smoothWheel: true,
       syncTouch: false,
-      touchMultiplier: 1.15,
-      wheelMultiplier: 0.92,
+      touchMultiplier: 1.1,
+      wheelMultiplier: 0.88,
     });
 
     lenisInstance = lenis;

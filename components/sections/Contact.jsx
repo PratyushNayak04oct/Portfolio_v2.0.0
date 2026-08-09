@@ -52,10 +52,10 @@ export default function Contact() {
       className="relative z-20 flex min-h-[92svh] items-center section-space"
     >
       <div className="content-grid grid w-full grid-cols-12 gap-10 lg:gap-12">
-        <div className="col-span-12 lg:col-span-8">
+        <div className="copy-above-reactor copy-plate col-span-12 lg:col-span-8">
           <p
             data-cta
-            className="font-mono text-tech uppercase tracking-[0.16em] text-cyan opacity-0"
+            className="text-depth-soft font-mono text-tech uppercase tracking-[0.16em] text-cyan opacity-0"
           >
             06 — Final sequence
           </p>
@@ -72,7 +72,7 @@ export default function Contact() {
           </h2>
           <p
             data-cta
-            className="mt-10 max-w-lg text-sub leading-relaxed text-ink-secondary opacity-0"
+            className="text-depth-soft mt-10 max-w-lg text-sub leading-relaxed text-ink-secondary opacity-0"
           >
             Have an idea? Let&apos;s turn it into something real.
           </p>

@@ -10,12 +10,15 @@ export default function About() {
   return (
     <section id="about" className="relative z-20 section-space">
       <div className="content-grid grid grid-cols-12 gap-x-8 gap-y-14 lg:gap-x-12">
-        <div ref={parallax} className="col-span-12 will-change-transform lg:col-span-7">
+        <div
+          ref={parallax}
+          className="copy-above-reactor copy-plate col-span-12 will-change-transform lg:col-span-7"
+        >
           <SectionHeading eyebrow="01 — About" title="I BUILD SYSTEMS." />
           <AnimatedText
             as="p"
             delay={0.12}
-            className="mt-10 max-w-xl text-sub leading-relaxed text-ink-secondary"
+            className="text-depth-soft mt-10 max-w-xl text-sub leading-relaxed text-ink-secondary"
           >
             From enterprise applications to interactive web experiences, I enjoy
             turning complex problems into intuitive digital products.

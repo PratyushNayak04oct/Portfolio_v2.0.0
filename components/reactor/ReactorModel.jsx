@@ -190,9 +190,9 @@ export default function ReactorModel({ reducedMotion }) {
     const t = reactorScroll.target;
     if (!t || !root.current) return;
 
-    // Fast follow for scroll sync — layout/facing nearly 1:1 with scroll
-    const layoutK = reducedMotion ? 1 : 1 - Math.exp(-18 * delta);
-    const layerK = reducedMotion ? 1 : 1 - Math.exp(-12 * delta);
+    // Cinematic follow — soft enough to feel butter, tight enough to stay on scroll
+    const layoutK = reducedMotion ? 1 : 1 - Math.exp(-5.5 * delta);
+    const layerK = reducedMotion ? 1 : 1 - Math.exp(-4.2 * delta);
     const c = current.current;
 
     const lerpKey = (key, props, k) => {

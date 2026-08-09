@@ -19,12 +19,15 @@ export function useSectionProgress() {
       end: 'max',
       onUpdate: (self) => {
         labActions.setScrollProgress(self.progress);
-        // Direct mutable write — R3F reads this every frame (no React lag)
+        // Section-weighted + EMA-smoothed blend for butterier reactor motion
         const blended = updateReactorScroll(self.progress);
         labActions.setPowerFromBlend(blended);
       },
     });
     triggers.push(docTrigger);
+
+    // Refresh after layout settles so weighted tops are accurate
+    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     sections.forEach((id) => {
       const el = document.getElementById(id);

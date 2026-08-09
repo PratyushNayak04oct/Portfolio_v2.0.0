@@ -26,7 +26,7 @@ function ReactorRig({ reducedMotion }) {
   useFrame((_, delta) => {
     if (!group.current) return;
     const t = reactorScroll.target;
-    const k = reducedMotion ? 1 : 1 - Math.exp(-14 * delta);
+    const k = reducedMotion ? 1 : 1 - Math.exp(-6 * delta);
 
     // Soft hover parallax — kept small so it doesn't fight top-front reveal
     const tx = pointer.current.x * 0.08;

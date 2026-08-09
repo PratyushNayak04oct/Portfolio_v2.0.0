@@ -88,7 +88,7 @@ export default function Hero() {
       className="relative z-20 flex min-h-[100svh] items-center pt-28 pb-20"
     >
       <div className="content-grid grid w-full grid-cols-12 gap-10 lg:gap-12">
-        <div className="copy-above-reactor col-span-12 flex flex-col justify-center lg:col-span-6">
+        <div className="copy-above-reactor copy-plate col-span-12 flex flex-col justify-center lg:col-span-6">
           <p
             data-hero="meta"
             className="text-depth-soft font-mono text-tech uppercase tracking-[0.18em] text-ink-muted opacity-0"
