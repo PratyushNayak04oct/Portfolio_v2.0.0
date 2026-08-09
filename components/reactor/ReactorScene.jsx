@@ -17,33 +17,26 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { isLowPowerDevice, isWebGLAvailable } from '@/lib/webgl';
 import { damp } from '@/lib/motion';
 
-function ReactorRig({ targetRef, reducedMotion, activeSection }) {
+function ReactorRig({ targetRef, reducedMotion }) {
   const group = useRef(null);
   const pointer = useDampedPointer(damp.reactor);
   const { camera } = useThree();
-  const camCurrent = useRef({ z: 3.6, fov: 34 });
+  const camCurrent = useRef({ z: 3.4, fov: 32 });
 
   useFrame((_, delta) => {
     if (!group.current) return;
     const t = targetRef.current;
     const k = reducedMotion ? 1 : 1 - Math.exp(-2 * delta);
 
-    // Subtle pointer parallax — weaker on hero so front face stays clear
-    const strength = activeSection === 'hero' ? 0.08 : 0.2;
-    const tx = pointer.current.x * strength;
-    const ty = -pointer.current.y * strength * 0.7;
+    // Soft hover parallax only — never tips into a side view
+    const tx = pointer.current.x * 0.1;
+    const ty = -pointer.current.y * 0.07;
     group.current.rotation.y += (tx - group.current.rotation.y) * k;
     group.current.rotation.x += (ty - group.current.rotation.x) * k;
 
-    if (!reducedMotion && activeSection !== 'hero') {
-      group.current.position.y = Math.sin(performance.now() * 0.0005) * 0.025;
-    } else {
-      group.current.position.y += (0 - group.current.position.y) * k;
-    }
-
     if (t?.camera) {
-      camCurrent.current.z += ((t.camera.z ?? 4.2) - camCurrent.current.z) * k;
-      camCurrent.current.fov += ((t.camera.fov ?? 36) - camCurrent.current.fov) * k;
+      camCurrent.current.z += ((t.camera.z ?? 3.8) - camCurrent.current.z) * k;
+      camCurrent.current.fov += ((t.camera.fov ?? 34) - camCurrent.current.fov) * k;
       camera.position.z = camCurrent.current.z;
       camera.fov = camCurrent.current.fov;
       camera.updateProjectionMatrix();
@@ -57,24 +50,20 @@ function ReactorRig({ targetRef, reducedMotion, activeSection }) {
   );
 }
 
-function SceneContent({ targetRef, reducedMotion, lowPower, activeSection }) {
+function SceneContent({ targetRef, reducedMotion, lowPower }) {
   return (
     <>
       <ambientLight intensity={0.55} color="#c5e4f0" />
       <hemisphereLight intensity={0.5} color="#e8f4fa" groundColor="#081018" />
-      <directionalLight position={[3.5, 3, 5]} intensity={1.15} color="#ffffff" />
-      <directionalLight position={[-3, -1, 2]} intensity={0.4} color="#5aa8e0" />
+      <directionalLight position={[2.5, 3, 5]} intensity={1.15} color="#ffffff" />
+      <directionalLight position={[-2.5, 1, 3]} intensity={0.4} color="#5aa8e0" />
 
-      <ReactorRig
-        targetRef={targetRef}
-        reducedMotion={reducedMotion}
-        activeSection={activeSection}
-      />
+      <ReactorRig targetRef={targetRef} reducedMotion={reducedMotion} />
 
       {!lowPower && (
         <ContactShadows
-          position={[0, -1.85, 0]}
-          opacity={0.28}
+          position={[0, -1.7, 0]}
+          opacity={0.25}
           scale={12}
           blur={2.6}
           far={4}
@@ -82,11 +71,10 @@ function SceneContent({ targetRef, reducedMotion, lowPower, activeSection }) {
         />
       )}
 
-      {/* Soft bloom only — restrained power glow */}
       {!reducedMotion && (
         <EffectComposer multisampling={0}>
           <Bloom
-            intensity={lowPower ? 0.22 : 0.32}
+            intensity={lowPower ? 0.2 : 0.3}
             luminanceThreshold={0.55}
             luminanceSmoothing={0.9}
             mipmapBlur
@@ -132,7 +120,7 @@ export default function ReactorScene() {
         <Canvas
           className="reactor-canvas"
           dpr={lowPower ? [1, 1.35] : [1, 1.75]}
-          camera={{ position: [0, 0, 3.6], fov: 34, near: 0.1, far: 50 }}
+          camera={{ position: [0, 0, 3.4], fov: 32, near: 0.1, far: 50 }}
           gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
@@ -146,7 +134,6 @@ export default function ReactorScene() {
               targetRef={targetRef}
               reducedMotion={reducedMotion}
               lowPower={lowPower}
-              activeSection={activeSection}
             />
           </Suspense>
         </Canvas>

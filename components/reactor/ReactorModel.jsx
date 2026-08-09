@@ -5,12 +5,14 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
+const MODEL_URL = '/models/reactor.glb?v=4';
+
 /**
- * Blender Mark-I inspired reactor with triangular core.
- * Orientation + scale driven by scroll targets.
+ * Front-facing Blender reactor (triangle core toward camera).
+ * Base +PI/2 X corrects Blender Z-up → glTF Y-up so the face isn't edge-on.
  */
 export default function ReactorModel({ targetRef, reducedMotion }) {
-  const { scene } = useGLTF('/models/reactor.glb?v=3');
+  const { scene } = useGLTF(MODEL_URL);
   const root = useRef(null);
   const groups = useRef({});
   const lights = useRef({});
@@ -34,15 +36,23 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
           obj.name.includes('CoreEnergy') ||
           obj.name.includes('Magnetic') ||
           obj.name.includes('Conduit');
+        const isCopper =
+          name.includes('copper') ||
+          obj.name.includes('Coil') ||
+          obj.name.includes('Copper') ||
+          obj.name.includes('DetailWire');
 
         if (isGlow || (m.emissive && m.emissive.r + m.emissive.g + m.emissive.b > 0.02)) {
           m.emissive = new THREE.Color('#5ec8e8');
-          // Restrained glow — readable, not neon blast
-          m.emissiveIntensity = obj.name.includes('Triangle') ? 1.6 : 0.95;
+          m.emissiveIntensity = obj.name.includes('Triangle') ? 1.55 : 0.9;
           m.toneMapped = true;
+        } else if (isCopper && m.color) {
+          m.color = new THREE.Color('#d48452');
+          m.metalness = 0.92;
+          m.roughness = 0.28;
         } else if (m.color) {
           const col = m.color.clone();
-          col.offsetHSL(0, 0.02, 0.06);
+          col.offsetHSL(0, 0.02, 0.05);
           m.color = col;
           m.metalness = Math.min(1, (m.metalness ?? 0.8) + 0.04);
           m.roughness = Math.max(0.18, (m.roughness ?? 0.35) - 0.04);
@@ -76,7 +86,9 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
         n.startsWith('Coil') ||
         n.startsWith('Acrylic') ||
         n.startsWith('BallJoint') ||
-        n.startsWith('Interconnect')
+        n.startsWith('Interconnect') ||
+        n.startsWith('Copper') ||
+        n.startsWith('DetailWire')
       ) {
         map.outerShell.push(obj);
       } else if (n === 'Ring01') map.ring01.push(obj);
@@ -117,22 +129,22 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
     magneticContainment: { z: 0, opacity: 1 },
     energyConduits: { intensity: 0.4, sequential: 0.2 },
     coreHousing: { z: 0 },
-    core: { rotationSpeed: 0.08, emissive: 1.2 },
-    emitter: { pulse: 0.25, intensity: 1.1 },
-    layout: { x: 1.15, y: 0.05, scale: 1.55 },
+    core: { rotationSpeed: 0.06, emissive: 1.2 },
+    emitter: { pulse: 0.22, intensity: 1.05 },
+    layout: { x: 1.2, y: 0.08, scale: 1.55 },
     facing: { x: 0, y: 0 },
   });
 
   useFrame((state, delta) => {
     const t = targetRef.current;
     if (!t || !root.current) return;
-    const damp = reducedMotion ? 1 : 1 - Math.exp(-2.1 * delta);
+    const dampAmt = reducedMotion ? 1 : 1 - Math.exp(-2.0 * delta);
     const c = current.current;
 
     const lerpKey = (key, props) => {
       props.forEach((p) => {
         if (typeof t[key]?.[p] === 'number') {
-          c[key][p] += (t[key][p] - c[key][p]) * damp;
+          c[key][p] += (t[key][p] - c[key][p]) * dampAmt;
         }
       });
     };
@@ -153,68 +165,76 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
     root.current.position.x = c.layout.x;
     root.current.position.y = c.layout.y;
     root.current.scale.setScalar(c.layout.scale);
-    // Front-facing in hero (facing ~0); gentle tilt while revealing
+
+    // Facing stays front; tiny optional offsets only (kept ~0 in story)
     root.current.rotation.x = c.facing.x;
     root.current.rotation.y = c.facing.y;
 
     const breath = reducedMotion
       ? 0
-      : Math.sin(state.clock.elapsedTime * 0.55) * 0.12 * c.emitter.pulse;
+      : Math.sin(state.clock.elapsedTime * 0.5) * 0.1 * c.emitter.pulse;
 
-    const shift = (list, z, rotZ = 0) => {
+    /**
+     * After Blender Yup export, reactor depth is on local Y.
+     * Parent R_x(π/2) maps that depth toward the camera (world Z).
+     */
+    const shiftDepth = (list, depth, spin = 0) => {
       list.forEach((obj) => {
-        if (obj.userData.baseZ === undefined) obj.userData.baseZ = obj.position.z;
-        obj.position.z = obj.userData.baseZ + z;
-        if (rotZ) obj.rotation.z += rotZ * delta;
+        if (obj.userData.baseY === undefined) obj.userData.baseY = obj.position.y;
+        obj.position.y = obj.userData.baseY + depth;
+        if (spin) obj.rotation.y += spin * delta;
       });
     };
 
     const g = groups.current;
-    shift(g.outerShell || [], c.outerShell.z);
-    shift(g.ring01 || [], c.ring01.z, 0.04 + c.ring01.rotation);
-    shift(g.ring02 || [], c.ring02.z, -(0.03 + Math.abs(c.ring02.rotation)));
-    shift(g.ring03 || [], c.ring03.z, 0.05 + c.ring03.rotation);
-    shift(g.coolingSystem || [], c.coolingSystem.z);
-    shift(g.magneticContainment || [], c.magneticContainment.z);
-    shift(g.coreHousing || [], c.coreHousing.z);
-    shift(g.core || [], c.coreHousing.z * 0.35, c.core.rotationSpeed);
-    shift(g.emitter || [], c.ring01.z * 0.45);
-    shift(g.backPlate || [], c.coreHousing.z * 0.2);
+    shiftDepth(g.outerShell || [], c.outerShell.z);
+    shiftDepth(g.ring01 || [], c.ring01.z, 0.035 + c.ring01.rotation);
+    shiftDepth(g.ring02 || [], c.ring02.z, -(0.03 + Math.abs(c.ring02.rotation)));
+    shiftDepth(g.ring03 || [], c.ring03.z, 0.04 + c.ring03.rotation);
+    shiftDepth(g.coolingSystem || [], c.coolingSystem.z);
+    shiftDepth(g.magneticContainment || [], c.magneticContainment.z);
+    shiftDepth(g.coreHousing || [], c.coreHousing.z);
+    shiftDepth(g.core || [], c.coreHousing.z * 0.35, c.core.rotationSpeed);
+    shiftDepth(g.emitter || [], c.ring01.z * 0.4);
+    shiftDepth(g.backPlate || [], c.coreHousing.z * 0.22);
 
+    // Radial expand in the disc plane (glTF X / Z)
     (g.outerShell || []).forEach((obj) => {
       if (
         !obj.name.startsWith('Coil') &&
         !obj.name.startsWith('Acrylic') &&
-        !obj.name.startsWith('Ball')
+        !obj.name.startsWith('Ball') &&
+        !obj.name.startsWith('Copper')
       ) {
         return;
       }
       if (!obj.userData.basePos) obj.userData.basePos = obj.position.clone();
       const b = obj.userData.basePos;
-      const len = Math.hypot(b.x, b.y) || 1;
-      const f = 1 + c.outerShell.radial * 0.32;
+      const len = Math.hypot(b.x, b.z) || 1;
+      const f = 1 + c.outerShell.radial * 0.34;
       obj.position.x = (b.x / len) * len * f;
-      obj.position.y = (b.y / len) * len * f;
+      obj.position.z = (b.z / len) * len * f;
     });
 
     cloned.traverse((obj) => {
       if (!obj.isMesh) return;
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
       mats.forEach((m) => {
-        if (!m?.emissive || (m.emissiveIntensity ?? 0) < 0.3) return;
-        const base = obj.name.includes('Triangle') ? 1.5 : 0.9;
-        m.emissiveIntensity = base + c.emitter.intensity * 0.15 + breath;
+        if (!m?.emissive || (m.emissiveIntensity ?? 0) < 0.25) return;
+        const base = obj.name.includes('Triangle') ? 1.45 : 0.85;
+        m.emissiveIntensity = base + c.emitter.intensity * 0.12 + breath;
       });
     });
 
     if (lights.current.core) {
-      lights.current.core.intensity = 1.4 + c.emitter.intensity * 0.35 + breath;
+      lights.current.core.intensity = 1.35 + c.emitter.intensity * 0.3 + breath;
     }
   });
 
   return (
     <group ref={root}>
-      <group scale={0.78}>
+      {/* Correct Blender face (+Z) so triangle faces the camera, not the rim */}
+      <group rotation={[Math.PI / 2, 0, 0]} scale={0.78}>
         <primitive object={cloned} />
       </group>
       <pointLight
@@ -222,14 +242,14 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
           lights.current.core = el;
         }}
         color="#7ad4ef"
-        intensity={1.6}
+        intensity={1.5}
         distance={8}
         decay={2}
-        position={[0, 0, 0.5]}
+        position={[0, 0, 0.55]}
       />
-      <pointLight color="#3a7fd4" intensity={0.55} distance={6} position={[0, 0, 1.1]} />
+      <pointLight color="#3a7fd4" intensity={0.45} distance={6} position={[0, 0, 1.1]} />
     </group>
   );
 }
 
-useGLTF.preload('/models/reactor.glb?v=3');
+useGLTF.preload(MODEL_URL);
