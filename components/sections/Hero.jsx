@@ -104,7 +104,8 @@ export default function Hero() {
 
           <p
             data-hero="brand"
-            className="text-depth text-shimmer mt-8 font-display text-sub font-medium tracking-[0.08em] text-ink opacity-0"
+            className="text-depth mt-8 font-display text-sub font-medium tracking-[0.08em] text-ink opacity-0"
+            style={{ color: 'var(--text-primary)', WebkitTextFillColor: 'var(--text-primary)' }}
           >
             {site.fullName}
           </p>
@@ -116,7 +117,10 @@ export default function Hero() {
             {site.roles.join(' · ')}
           </p>
 
-          <h1 className="text-depth mt-10 font-display font-medium text-ink">
+          <h1
+            className="text-depth mt-10 font-display font-medium text-ink"
+            style={{ color: 'var(--text-primary)', WebkitTextFillColor: 'var(--text-primary)' }}
+          >
             <span data-hero="line" className="block text-hero opacity-0">
               I BUILD
             </span>

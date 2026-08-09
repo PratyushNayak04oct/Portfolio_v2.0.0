@@ -6,21 +6,24 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=13';
+const MODEL_URL = '/models/reactor.glb?v=14';
 
-/** Polished copper — physical material so clearcoat/specular actually shine */
+/** Shiny brown copper — metallic + lustrous, warm chocolate tone */
 function makeLustrousCopper(source) {
   const m = new THREE.MeshPhysicalMaterial({
-    color: '#e09245',
+    color: '#8a4a28',
     metalness: 1,
-    roughness: 0.045,
-    emissive: new THREE.Color('#402010'),
-    emissiveIntensity: 0.07,
-    envMapIntensity: 2.35,
-    clearcoat: 0.7,
-    clearcoatRoughness: 0.07,
+    roughness: 0.12,
+    emissive: new THREE.Color('#3a1a0c'),
+    emissiveIntensity: 0.05,
+    envMapIntensity: 2.1,
+    clearcoat: 0.55,
+    clearcoatRoughness: 0.12,
     reflectivity: 1,
-    ior: 1.35,
+    ior: 1.4,
+    sheen: 0.35,
+    sheenRoughness: 0.28,
+    sheenColor: new THREE.Color('#c48a55'),
     toneMapped: true,
   });
   if (source?.name) m.name = source.name;
@@ -338,8 +341,8 @@ export default function ReactorModel({ reducedMotion }) {
         position={[0, 0, 0.5]}
       />
       {/* Warm rim so copper windings stay lustrous, not cyan-washed */}
-      <pointLight color="#ff9a55" intensity={1.05} distance={4.8} decay={2} position={[0.9, 0.2, 0.85]} />
-      <pointLight color="#ffc090" intensity={0.45} distance={4.2} decay={2} position={[-0.85, -0.15, 0.7]} />
+      <pointLight color="#c48a55" intensity={0.95} distance={4.8} decay={2} position={[0.9, 0.2, 0.85]} />
+      <pointLight color="#a06030" intensity={0.5} distance={4.2} decay={2} position={[-0.85, -0.15, 0.7]} />
       <pointLight color="#e8f4ff" intensity={0.18} distance={4} position={[0, 0, 1.0]} />
     </group>
   );
