@@ -56,7 +56,7 @@ function Leg({
         material={mats.black}
         rotation={[rear ? 0.08 : -0.05, 0, 0]}
       >
-        <capsuleGeometry args={[0.032, 0.12, 4, 10]} />
+        <capsuleGeometry args={[0.042, 0.13, 4, 10]} />
       </mesh>
       {/* Knee hinge */}
       <group ref={kneeRef} position={[0, -0.18, rear ? -0.02 : 0.015]}>
@@ -92,8 +92,9 @@ function Leg({
  * B.R.U.N.O. — mechanical Doberman matching the provided reference:
  * lean chassis, matte black plates, silver lower legs, red servo hubs.
  */
-export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
+export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
   const root = useRef(null);
+  const baseYaw = 0.45;
   const head = useRef(null);
   const neck = useRef(null);
   const torso = useRef(null);
@@ -164,29 +165,32 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
     phase.current += d;
     const t = phase.current;
 
-    // Happy baseline — always a lively wag + soft open mouth pant
+    // Happy baseline — lively wag (quiet when sleeping)
+    const sleeping = state === BRUNO_STATES.Sleep;
     const happy = state === BRUNO_STATES.Excited || state === BRUNO_STATES.Wag;
-    const wagSpeed = happy ? 14 : state === BRUNO_STATES.Bark ? 16 : 10;
-    const wagAmp = happy ? 0.85 : state === BRUNO_STATES.Bark ? 0.7 : 0.55;
+    const wagSpeed = sleeping ? 1.2 : happy ? 14 : state === BRUNO_STATES.Bark ? 16 : 10;
+    const wagAmp = sleeping ? 0.06 : happy ? 0.85 : state === BRUNO_STATES.Bark ? 0.7 : 0.55;
 
     if (tail.current) {
       tail.current.rotation.z = Math.sin(t * wagSpeed) * wagAmp;
       tail.current.rotation.y = Math.sin(t * (wagSpeed * 0.65)) * wagAmp * 0.35;
-      tail.current.rotation.x = 0.35 + Math.sin(t * 6) * 0.12;
+      tail.current.rotation.x = 0.35 + Math.sin(t * 6) * (sleeping ? 0.02 : 0.12);
     }
     if (tailTip.current) {
       tailTip.current.rotation.z = Math.sin(t * wagSpeed + 0.8) * wagAmp * 0.7;
-      tailTip.current.rotation.x = 0.25 + Math.sin(t * 7) * 0.1;
+      tailTip.current.rotation.x = 0.25 + Math.sin(t * 7) * (sleeping ? 0.02 : 0.1);
     }
 
-    // Soft pant / smile — dog mouth slightly open when happy
-    let jawOpen = 0.14 + Math.sin(t * 3.2) * 0.04;
+    // Canine mouth — mostly closed, opens for bark / happy pant
+    let jawOpen = 0.06 + Math.sin(t * 2.4) * 0.025;
     if (state === BRUNO_STATES.Bark) {
-      jawOpen = 0.42 + Math.abs(Math.sin(t * 15)) * 0.38;
-    } else if (state === BRUNO_STATES.Excited) {
-      jawOpen = 0.22 + Math.sin(t * 5) * 0.06;
+      jawOpen = 0.48 + Math.abs(Math.sin(t * 15)) * 0.4;
+    } else if (state === BRUNO_STATES.Excited || state === BRUNO_STATES.Wag) {
+      jawOpen = 0.12 + Math.sin(t * 4) * 0.04;
+    } else if (state === BRUNO_STATES.Sleep) {
+      jawOpen = 0.02;
     } else if (state === BRUNO_STATES.Curious || state === BRUNO_STATES.Look) {
-      jawOpen = 0.1 + Math.sin(t * 2) * 0.03;
+      jawOpen = 0.08 + Math.sin(t * 2) * 0.02;
     }
     if (jaw.current) jaw.current.rotation.x = jawOpen;
 
@@ -247,6 +251,23 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         head.current.rotation.x = 0.12;
         head.current.rotation.y = Math.sin(t * 1.4) * 0.2;
       }
+    } else if (state === BRUNO_STATES.Sleep) {
+      setLimb(hipBL, kneeBL, ankleBL, 1.15, 1.35, -0.5);
+      setLimb(hipBR, kneeBR, ankleBR, 1.15, 1.35, -0.5);
+      setLimb(hipFL, kneeFL, ankleFL, 0.55, 0.85, -0.15);
+      setLimb(hipFR, kneeFR, ankleFR, 0.55, 0.85, -0.15);
+      if (torso.current) {
+        torso.current.rotation.x = -0.55;
+        torso.current.rotation.z = 0.35;
+        torso.current.position.y = -0.12;
+      }
+      if (head.current) {
+        head.current.rotation.x = 0.35;
+        head.current.rotation.y = 0.15;
+        head.current.rotation.z = 0.2;
+      }
+      if (neck.current) neck.current.rotation.x = 0.25;
+      root.current.position.y = -0.08;
     } else if (state === BRUNO_STATES.Look || state === BRUNO_STATES.Curious) {
       if (head.current) {
         head.current.rotation.y = Math.sin(t * 1.1) * 0.55;
@@ -294,12 +315,17 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
       setLimb(hipBR, kneeBR, ankleBR, 0.5, 1.0, -0.2);
       if (torso.current) torso.current.rotation.x = -0.15;
       if (jaw.current) jaw.current.rotation.x = 0.28;
-    } else if (state === BRUNO_STATES.Spin) {
-      root.current.rotation.y += d * 6.5;
-      setLimb(hipFL, kneeFL, ankleFL, -0.2, 0.5, 0.1);
-      setLimb(hipFR, kneeFR, ankleFR, -0.2, 0.5, 0.1);
-      setLimb(hipBL, kneeBL, ankleBL, 0.2, 0.45, 0);
-      setLimb(hipBR, kneeBR, ankleBR, 0.2, 0.45, 0);
+    } else if (state === BRUNO_STATES.Spin || state === BRUNO_STATES.Flip) {
+      // Flip = aerial spin
+      root.current.rotation.y += d * 7.5;
+      if (state === BRUNO_STATES.Flip) {
+        root.current.rotation.x += d * 8.5;
+        root.current.position.y = 0.12 + Math.abs(Math.sin(t * 5)) * 0.28;
+      }
+      setLimb(hipFL, kneeFL, ankleFL, -0.35, 0.7, 0.15);
+      setLimb(hipFR, kneeFR, ankleFR, -0.35, 0.7, 0.15);
+      setLimb(hipBL, kneeBL, ankleBL, 0.35, 0.65, -0.1);
+      setLimb(hipBR, kneeBR, ankleBR, 0.35, 0.65, -0.1);
     } else {
       // Happy idle
       if (head.current) {
@@ -316,10 +342,18 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
       setLimb(hipBL, kneeBL, ankleBL, 0.02, 0.18, 0);
       setLimb(hipBR, kneeBR, ankleBR, -0.02, 0.18, 0);
       root.current.position.y = Math.abs(Math.sin(t * 2.2)) * 0.012;
-      if (state !== BRUNO_STATES.Spin) root.current.rotation.y *= 0.92;
+      root.current.rotation.x *= 0.85;
     }
 
-    if (state !== BRUNO_STATES.Spin) root.current.rotation.y *= 0.9;
+    // Face left/right during page run; damp spin when not flipping
+    const targetYaw = facing < 0 ? Math.PI - baseYaw : baseYaw;
+    if (state === BRUNO_STATES.Run) {
+      root.current.rotation.y += (targetYaw - root.current.rotation.y) * 0.18;
+      root.current.rotation.x *= 0.85;
+    } else if (state !== BRUNO_STATES.Spin && state !== BRUNO_STATES.Flip) {
+      root.current.rotation.y += (baseYaw - root.current.rotation.y) * 0.12;
+      root.current.rotation.x *= 0.85;
+    }
 
     const pulse = 2.5 + Math.sin(t * 2.4) * 0.4;
     mats.redRing.emissiveIntensity = pulse;
@@ -329,24 +363,31 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
   /* eslint-enable react-hooks/immutability */
 
   return (
-    <group ref={root} position={[0, 0.5, 0]} scale={1.48} rotation={[0, 0.45, 0]}>
-      {/* —— Deep chest → tucked waist (Doberman silhouette) —— */}
+    <group ref={root} position={[0, 0.5, 0]} scale={1.48} rotation={[0, baseYaw, 0]}>
+      {/* —— Muscular chest → tucked waist —— */}
       <group ref={torso}>
-        {/* Chest / ribcage */}
-        <mesh position={[0, 0.02, 0.1]} material={mats.black} rotation={[0.05, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.11, 0.22, 8, 16]} />
+        {/* Broad chest / shoulders */}
+        <mesh position={[0, 0.02, 0.12]} material={mats.black} rotation={[0.05, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.125, 0.2, 8, 16]} />
+        </mesh>
+        {/* Shoulder plates */}
+        <mesh position={[0.09, 0.04, 0.12]} material={mats.blackSoft}>
+          <boxGeometry args={[0.06, 0.08, 0.1]} />
+        </mesh>
+        <mesh position={[-0.09, 0.04, 0.12]} material={mats.blackSoft}>
+          <boxGeometry args={[0.06, 0.08, 0.1]} />
         </mesh>
         {/* Mid body taper */}
         <mesh position={[0, 0.01, -0.06]} material={mats.blackSoft} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.075, 0.2, 8, 14]} />
+          <capsuleGeometry args={[0.08, 0.2, 8, 14]} />
         </mesh>
-        {/* Haunches */}
+        {/* Muscular haunches */}
         <mesh position={[0, 0.02, -0.22]} material={mats.black} rotation={[-0.05, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.095, 0.12, 8, 14]} />
+          <capsuleGeometry args={[0.11, 0.12, 8, 14]} />
         </mesh>
         {/* Armor plate top */}
-        <mesh position={[0, 0.08, 0.02]} material={mats.black}>
-          <boxGeometry args={[0.12, 0.035, 0.38]} />
+        <mesh position={[0, 0.09, 0.02]} material={mats.black}>
+          <boxGeometry args={[0.14, 0.04, 0.38]} />
         </mesh>
         {/* Red spine LED strip */}
         <mesh position={[0, 0.1, 0.0]} material={mats.spine}>
@@ -384,58 +425,60 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         ))}
       </group>
 
-      {/* —— Dog head: snout, hinged mouth, happy expression —— */}
-      <group ref={head} position={[0, 0.12, 0.42]}>
-        {/* Skull */}
+      {/* —— Wedge head + real canine hinged jaw —— */}
+      <group ref={head} position={[0, 0.12, 0.44]}>
+        {/* Skull shell */}
         <mesh material={mats.black}>
-          <boxGeometry args={[0.12, 0.1, 0.15]} />
+          <boxGeometry args={[0.125, 0.105, 0.14]} />
         </mesh>
-        {/* Upper muzzle (dog snout) */}
-        <mesh position={[0, 0.01, 0.14]} material={mats.blackSoft}>
-          <boxGeometry args={[0.088, 0.055, 0.13]} />
+        {/* Upper snout — tapered wedge like a dog muzzle */}
+        <mesh position={[0, 0.008, 0.12]} material={mats.blackSoft}>
+          <boxGeometry args={[0.095, 0.05, 0.1]} />
         </mesh>
-        {/* Rounded nose tip */}
-        <mesh position={[0, 0.005, 0.21]} material={mats.lens}>
-          <sphereGeometry args={[0.028, 12, 12]} />
+        <mesh position={[0, 0.002, 0.185]} material={mats.black}>
+          <boxGeometry args={[0.072, 0.042, 0.07]} />
         </mesh>
-        <mesh position={[0, 0.012, 0.228]} material={mats.pad}>
-          <sphereGeometry args={[0.016, 10, 10]} />
+        {/* Black nose */}
+        <mesh position={[0, 0.0, 0.225]} material={mats.lens}>
+          <sphereGeometry args={[0.022, 12, 12]} />
         </mesh>
-        {/* Soft brow / happy eye lenses */}
-        <mesh position={[-0.035, 0.03, 0.08]} material={mats.lens}>
-          <sphereGeometry args={[0.016, 10, 10]} />
+        {/* Sensor visor strip */}
+        <mesh position={[0, 0.02, 0.09]} material={mats.lens}>
+          <boxGeometry args={[0.08, 0.028, 0.018]} />
         </mesh>
-        <mesh position={[0.035, 0.03, 0.08]} material={mats.lens}>
-          <sphereGeometry args={[0.016, 10, 10]} />
+        <mesh position={[0, 0.02, 0.1]} material={mats.redCore}>
+          <circleGeometry args={[0.01, 12]} />
         </mesh>
-        <mesh position={[-0.035, 0.03, 0.092]} material={mats.redCore}>
-          <circleGeometry args={[0.007, 10]} />
+        {/* Side eye LEDs */}
+        <mesh position={[-0.04, 0.025, 0.07]} material={mats.redRing}>
+          <sphereGeometry args={[0.01, 10, 10]} />
         </mesh>
-        <mesh position={[0.035, 0.03, 0.092]} material={mats.redCore}>
-          <circleGeometry args={[0.007, 10]} />
-        </mesh>
-        {/* Camera aperture on forehead */}
-        <mesh position={[0, 0.035, 0.06]} material={mats.silver}>
-          <cylinderGeometry args={[0.014, 0.016, 0.016, 14]} />
+        <mesh position={[0.04, 0.025, 0.07]} material={mats.redRing}>
+          <sphereGeometry args={[0.01, 10, 10]} />
         </mesh>
 
-        {/* Hinged lower jaw — canine mouth shape */}
-        <group ref={jaw} position={[0, -0.02, 0.08]}>
-          {/* U-shaped jaw plate */}
-          <mesh position={[0, -0.028, 0.06]} material={mats.black}>
-            <boxGeometry args={[0.082, 0.032, 0.12]} />
+        {/* Lower jaw — matches snout taper, hinges from the throat */}
+        <group ref={jaw} position={[0, -0.012, 0.06]}>
+          <mesh position={[0, -0.03, 0.08]} material={mats.black}>
+            <boxGeometry args={[0.088, 0.028, 0.13]} />
           </mesh>
-          {/* Chin taper */}
-          <mesh position={[0, -0.035, 0.12]} material={mats.blackSoft}>
-            <boxGeometry args={[0.06, 0.022, 0.05]} />
+          <mesh position={[0, -0.034, 0.15]} material={mats.blackSoft}>
+            <boxGeometry args={[0.062, 0.02, 0.055]} />
           </mesh>
-          {/* Inner gum */}
-          <mesh position={[0, -0.012, 0.07]} material={mats.gum}>
-            <boxGeometry args={[0.07, 0.012, 0.09]} />
+          {/* Lip line */}
+          <mesh position={[0, -0.014, 0.1]} material={mats.gum}>
+            <boxGeometry args={[0.078, 0.006, 0.1]} />
           </mesh>
-          {/* Happy tongue tip */}
-          <mesh position={[0, -0.02, 0.13]} rotation={[0.35, 0, 0]} material={mats.tongue}>
-            <capsuleGeometry args={[0.014, 0.045, 4, 8]} />
+          {/* Teeth row */}
+          <mesh position={[-0.02, -0.018, 0.155]} material={mats.silver}>
+            <boxGeometry args={[0.012, 0.01, 0.01]} />
+          </mesh>
+          <mesh position={[0.02, -0.018, 0.155]} material={mats.silver}>
+            <boxGeometry args={[0.012, 0.01, 0.01]} />
+          </mesh>
+          {/* Tongue — only peeks when jaw opens */}
+          <mesh position={[0, -0.022, 0.12]} rotation={[0.2, 0, 0]} material={mats.tongue}>
+            <capsuleGeometry args={[0.012, 0.04, 4, 8]} />
           </mesh>
         </group>
 
@@ -444,16 +487,10 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
           <mesh rotation={[0.2, 0, -0.22]} material={mats.black}>
             <coneGeometry args={[0.028, 0.12, 4]} />
           </mesh>
-          <mesh position={[0.005, 0.02, 0.005]} rotation={[0.2, 0, -0.22]} material={mats.gum}>
-            <coneGeometry args={[0.012, 0.06, 4]} />
-          </mesh>
         </group>
         <group ref={earR} position={[0.052, 0.08, -0.02]}>
           <mesh rotation={[0.2, 0, 0.22]} material={mats.black}>
             <coneGeometry args={[0.028, 0.12, 4]} />
-          </mesh>
-          <mesh position={[-0.005, 0.02, 0.005]} rotation={[0.2, 0, 0.22]} material={mats.gum}>
-            <coneGeometry args={[0.012, 0.06, 4]} />
           </mesh>
         </group>
 
@@ -482,7 +519,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         hipRef={hipFL}
         kneeRef={kneeFL}
         ankleRef={ankleFL}
-        position={[0.1, -0.02, 0.14]}
+        position={[0.115, -0.02, 0.14]}
         side={1}
       />
       <Leg
@@ -490,7 +527,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         hipRef={hipFR}
         kneeRef={kneeFR}
         ankleRef={ankleFR}
-        position={[-0.1, -0.02, 0.14]}
+        position={[-0.115, -0.02, 0.14]}
         side={-1}
       />
       <Leg
@@ -498,7 +535,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         hipRef={hipBL}
         kneeRef={kneeBL}
         ankleRef={ankleBL}
-        position={[0.095, -0.02, -0.2]}
+        position={[0.11, -0.02, -0.2]}
         side={1}
         rear
       />
@@ -507,7 +544,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         hipRef={hipBR}
         kneeRef={kneeBR}
         ankleRef={ankleBR}
-        position={[-0.095, -0.02, -0.2]}
+        position={[-0.11, -0.02, -0.2]}
         side={-1}
         rear
       />

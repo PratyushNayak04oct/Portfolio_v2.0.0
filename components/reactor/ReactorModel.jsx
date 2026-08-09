@@ -6,28 +6,58 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=15';
+const MODEL_URL = '/models/reactor.glb?v=16';
 
-/** Shiny brown copper — polished metallic chocolate */
+/** Bright shiny copper matching reference coil — warm orange-brown + gold sheen */
 function makeLustrousCopper(source) {
   const m = new THREE.MeshPhysicalMaterial({
-    color: '#6e3a1c',
+    color: '#c87838',
     metalness: 1,
-    roughness: 0.08,
-    emissive: new THREE.Color('#2a1208'),
-    emissiveIntensity: 0.04,
-    envMapIntensity: 2.6,
-    clearcoat: 0.75,
-    clearcoatRoughness: 0.08,
+    roughness: 0.06,
+    emissive: new THREE.Color('#5a2810'),
+    emissiveIntensity: 0.06,
+    envMapIntensity: 2.8,
+    clearcoat: 0.85,
+    clearcoatRoughness: 0.05,
     reflectivity: 1,
-    ior: 1.4,
-    sheen: 0.45,
-    sheenRoughness: 0.22,
-    sheenColor: new THREE.Color('#b87a48'),
+    ior: 1.35,
+    sheen: 0.55,
+    sheenRoughness: 0.18,
+    sheenColor: new THREE.Color('#e8b060'),
     toneMapped: true,
   });
   if (source?.name) m.name = source.name;
   return m;
+}
+
+function applySteel(m) {
+  m.color = new THREE.Color('#9aa6b4');
+  m.metalness = 0.96;
+  m.roughness = 0.22;
+  if (m.emissive) m.emissiveIntensity = 0;
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.3;
+  m.needsUpdate = true;
+}
+
+function applySilver(m) {
+  m.color = new THREE.Color('#d5dee6');
+  m.metalness = 1;
+  m.roughness = 0.12;
+  if (m.emissive) m.emissiveIntensity = 0;
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.6;
+  m.needsUpdate = true;
+}
+
+function applyGold(m) {
+  m.color = new THREE.Color('#c9a24a');
+  m.metalness = 1;
+  m.roughness = 0.18;
+  if (m.emissive) {
+    m.emissive.set('#3a2a08');
+    m.emissiveIntensity = 0.04;
+  }
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.7;
+  m.needsUpdate = true;
 }
 
 /**
@@ -80,7 +110,6 @@ export default function ReactorModel({ reducedMotion }) {
           obj.name.startsWith('CoilBlock') ||
           obj.name.startsWith('CoilBar') ||
           obj.name.startsWith('CoilForm');
-        // Object-name copper wins over any residual Blender emissive
         const isCopper =
           !isCoilBar &&
           (name.includes('copper') ||
@@ -88,6 +117,19 @@ export default function ReactorModel({ reducedMotion }) {
             obj.name.startsWith('Copper') ||
             obj.name.startsWith('DetailWire') ||
             /coilwire|copper|winding/i.test(obj.name));
+        const isGold =
+          !isCopper &&
+          (obj.name.startsWith('BallJoint') ||
+            obj.name.startsWith('Screw') ||
+            name.includes('gold') ||
+            name.includes('brass'));
+        const isSilver =
+          !isCopper &&
+          !isGold &&
+          (obj.name.startsWith('Ring') ||
+            obj.name.startsWith('Interconnect') ||
+            obj.name.startsWith('CagePost') ||
+            name.includes('silver'));
         const isGlow =
           !isCopper &&
           (name.includes('glow') ||
@@ -102,7 +144,6 @@ export default function ReactorModel({ reducedMotion }) {
           m.emissive.r + m.emissive.g + m.emissive.b > 0.02;
 
         if (isTriangleCore) {
-          // Preserve New Element core — bright white-cyan triangle
           const hot = obj.name === 'TriangleCore';
           m.emissive = new THREE.Color(hot ? '#e8f9ff' : '#4ec8ff');
           m.emissiveIntensity = hot ? 4.2 : 2.4;
@@ -110,37 +151,35 @@ export default function ReactorModel({ reducedMotion }) {
           if (m.color) m.color = new THREE.Color(hot ? '#d0f0ff' : '#2a6a90');
           glow.push({ m, base: hot ? 4.0 : 2.2 });
         } else if (isCopper) {
-          // Must run before glow — swap to physical copper so wires read lustrous
           const copper = makeLustrousCopper(m);
           const idx = mats.indexOf(m);
           if (idx >= 0) mats[idx] = copper;
           if (Array.isArray(obj.material)) obj.material[idx] = copper;
           else obj.material = copper;
         } else if (isPlate && m.color) {
-          m.color = new THREE.Color(
-            obj.name.startsWith('CoreBolt') || obj.name === 'CoreWell'
-              ? '#2a3036'
-              : '#9aa6b2',
-          );
-          m.metalness = 0.94;
-          m.roughness = 0.26;
-          if (m.emissive) m.emissiveIntensity = 0;
+          applySteel(m);
+          if (obj.name.startsWith('CoreBolt') || obj.name === 'CoreWell') {
+            m.color = new THREE.Color('#2a3036');
+            m.roughness = 0.32;
+          } else {
+            applySilver(m);
+          }
           steelCore.push(m);
         } else if (isGlow || hasGlowEmissive) {
           m.emissive = new THREE.Color('#4ec8ff');
           m.emissiveIntensity = 0.9;
           m.toneMapped = true;
           glow.push({ m, base: 0.85 });
+        } else if (isGold && m.color) {
+          applyGold(m);
+        } else if (isSilver && m.color) {
+          applySilver(m);
         } else if (isCoilBar && m.color) {
-          m.color = new THREE.Color('#9aa6b2');
-          m.metalness = 0.96;
-          m.roughness = 0.2;
-          if (m.emissive) m.emissiveIntensity = 0;
+          applySteel(m);
         } else if (m.color) {
-          // Warm-metal fallback: if albedo already reads copper-ish, keep it copper
           const col = m.color;
           const looksCopper =
-            col.r > 0.35 && col.g > 0.15 && col.g < 0.55 && col.b < 0.28;
+            col.r > 0.4 && col.g > 0.18 && col.g < 0.55 && col.b < 0.28;
           if (looksCopper) {
             const copper = makeLustrousCopper(m);
             const idx = mats.indexOf(m);
@@ -148,10 +187,7 @@ export default function ReactorModel({ reducedMotion }) {
             if (Array.isArray(obj.material)) obj.material[idx] = copper;
             else obj.material = copper;
           } else {
-            m.color = new THREE.Color('#8a96a3');
-            m.metalness = Math.min(1, (m.metalness ?? 0.85) + 0.08);
-            m.roughness = Math.max(0.16, (m.roughness ?? 0.3) - 0.06);
-            if (m.emissive) m.emissiveIntensity = 0;
+            applySteel(m);
           }
         }
       });
@@ -239,7 +275,7 @@ export default function ReactorModel({ reducedMotion }) {
     coreHousing: { z: 0 },
     core: { rotationSpeed: 0.12, emissive: 1.35 },
     emitter: { pulse: 0.32, intensity: 1.2 },
-    layout: { x: 1.1, y: 0.04, scale: 1.12 },
+    layout: { x: 1.1, y: 0.04, scale: 1.22 },
     facing: { x: 0, y: 0 },
   });
 
@@ -332,7 +368,7 @@ export default function ReactorModel({ reducedMotion }) {
 
   return (
     <group ref={root}>
-      <group rotation={[Math.PI / 2, 0, 0]} scale={0.52}>
+      <group rotation={[Math.PI / 2, 0, 0]} scale={0.58}>
         <primitive object={cloned} />
       </group>
       <pointLight
@@ -340,15 +376,15 @@ export default function ReactorModel({ reducedMotion }) {
           lights.current.core = el;
         }}
         color="#8adfff"
-        intensity={0.65}
+        intensity={0.6}
         distance={3.8}
         decay={2}
         position={[0, 0, 0.5]}
       />
-      {/* Warm rim so copper windings stay lustrous, not cyan-washed */}
-      <pointLight color="#c48a55" intensity={0.95} distance={4.8} decay={2} position={[0.9, 0.2, 0.85]} />
-      <pointLight color="#a06030" intensity={0.5} distance={4.2} decay={2} position={[-0.85, -0.15, 0.7]} />
-      <pointLight color="#e8f4ff" intensity={0.18} distance={4} position={[0, 0, 1.0]} />
+      {/* Warm + gold rim lights so copper reads bright and shiny */}
+      <pointLight color="#ffb060" intensity={1.15} distance={5} decay={2} position={[0.9, 0.25, 0.9]} />
+      <pointLight color="#e8c070" intensity={0.55} distance={4.4} decay={2} position={[-0.85, -0.1, 0.75]} />
+      <pointLight color="#e8f0f8" intensity={0.28} distance={4} position={[0, 0.4, 1.1]} />
     </group>
   );
 }
