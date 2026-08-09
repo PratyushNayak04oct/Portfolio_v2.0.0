@@ -18,9 +18,12 @@ function mat(color, metalness, roughness, extras = {}) {
 function ServoHub({ mats, position, scale = 1, side = 1 }) {
   return (
     <group position={position} scale={scale} rotation={[0, 0, side > 0 ? 0 : Math.PI]}>
-      {/* Outer silver rim */}
+      {/* Outer silver rim + gold lip */}
       <mesh material={mats.silver} rotation={[0, Math.PI / 2, 0]}>
         <cylinderGeometry args={[0.055, 0.055, 0.032, 24]} />
+      </mesh>
+      <mesh material={mats.gold} rotation={[0, Math.PI / 2, 0]} position={[side * 0.01, 0, 0]}>
+        <torusGeometry args={[0.048, 0.004, 6, 20]} />
       </mesh>
       {/* Inner matte recess */}
       <mesh material={mats.black} rotation={[0, Math.PI / 2, 0]} position={[side * 0.002, 0, 0]}>
@@ -92,7 +95,7 @@ function Leg({
  * B.R.U.N.O. — mechanical Doberman matching the provided reference:
  * lean chassis, matte black plates, silver lower legs, red servo hubs.
  */
-export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
+export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
   const root = useRef(null);
   const baseYaw = 0.45;
   const head = useRef(null);
@@ -119,33 +122,35 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
 
   const mats = useMemo(
     () => ({
-      black: mat('#14181c', 0.35, 0.55),
-      blackSoft: mat('#1c2228', 0.28, 0.62),
-      silver: mat('#c8d0d8', 0.95, 0.18),
-      pad: mat('#2a3036', 0.2, 0.75),
+      // Charcoal with cool silver metal tint
+      black: mat('#1a222c', 0.62, 0.38),
+      blackSoft: mat('#242c36', 0.55, 0.42),
+      silver: mat('#d8e0e8', 0.97, 0.14),
+      gold: mat('#d4b060', 0.96, 0.2),
+      pad: mat('#2a3036', 0.35, 0.65),
       lens: mat('#05080c', 0.9, 0.12),
       redRing: new THREE.MeshStandardMaterial({
         color: '#3a0606',
         emissive: '#ff2a2a',
         emissiveIntensity: 2.8,
-        metalness: 0.2,
-        roughness: 0.3,
+        metalness: 0.35,
+        roughness: 0.28,
       }),
       redCore: new THREE.MeshStandardMaterial({
         color: '#2a0404',
         emissive: '#ff4444',
         emissiveIntensity: 3.2,
-        metalness: 0.15,
-        roughness: 0.25,
+        metalness: 0.25,
+        roughness: 0.22,
       }),
       spine: new THREE.MeshStandardMaterial({
         color: '#2a0606',
         emissive: '#ff3030',
         emissiveIntensity: 2.2,
-        metalness: 0.2,
-        roughness: 0.35,
+        metalness: 0.3,
+        roughness: 0.32,
       }),
-      cable: mat('#0e1216', 0.4, 0.5),
+      cable: mat('#3a424c', 0.7, 0.35),
       tongue: mat('#8a2a3a', 0.15, 0.55),
       gum: mat('#4a1a22', 0.2, 0.5),
     }),
@@ -165,20 +170,19 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
     phase.current += d;
     const t = phase.current;
 
-    // Happy baseline — lively wag (quiet when sleeping)
-    const sleeping = state === BRUNO_STATES.Sleep;
+    // Happy baseline — faster wag on bark hover
     const happy = state === BRUNO_STATES.Excited || state === BRUNO_STATES.Wag;
-    const wagSpeed = sleeping ? 1.2 : happy ? 14 : state === BRUNO_STATES.Bark ? 16 : 10;
-    const wagAmp = sleeping ? 0.06 : happy ? 0.85 : state === BRUNO_STATES.Bark ? 0.7 : 0.55;
+    const wagSpeed = state === BRUNO_STATES.Bark ? 16 : happy ? 12 : 9;
+    const wagAmp = state === BRUNO_STATES.Bark ? 0.95 : happy ? 0.75 : 0.5;
 
     if (tail.current) {
       tail.current.rotation.z = Math.sin(t * wagSpeed) * wagAmp;
       tail.current.rotation.y = Math.sin(t * (wagSpeed * 0.65)) * wagAmp * 0.35;
-      tail.current.rotation.x = 0.35 + Math.sin(t * 6) * (sleeping ? 0.02 : 0.12);
+      tail.current.rotation.x = 0.35 + Math.sin(t * 6) * 0.12;
     }
     if (tailTip.current) {
       tailTip.current.rotation.z = Math.sin(t * wagSpeed + 0.8) * wagAmp * 0.7;
-      tailTip.current.rotation.x = 0.25 + Math.sin(t * 7) * (sleeping ? 0.02 : 0.1);
+      tailTip.current.rotation.x = 0.25 + Math.sin(t * 7) * 0.1;
     }
 
     // Canine mouth — mostly closed, opens for bark / happy pant
@@ -187,10 +191,6 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
       jawOpen = 0.48 + Math.abs(Math.sin(t * 15)) * 0.4;
     } else if (state === BRUNO_STATES.Excited || state === BRUNO_STATES.Wag) {
       jawOpen = 0.12 + Math.sin(t * 4) * 0.04;
-    } else if (state === BRUNO_STATES.Sleep) {
-      jawOpen = 0.02;
-    } else if (state === BRUNO_STATES.Curious || state === BRUNO_STATES.Look) {
-      jawOpen = 0.08 + Math.sin(t * 2) * 0.02;
     }
     if (jaw.current) jaw.current.rotation.x = jawOpen;
 
@@ -280,15 +280,18 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
       setLimb(hipBL, kneeBL, ankleBL, 0.02, 0.2, 0);
       setLimb(hipBR, kneeBR, ankleBR, -0.02, 0.2, 0);
     } else if (state === BRUNO_STATES.Bark) {
+      // Hover: bark + fast happy bounce
+      root.current.position.y = Math.abs(Math.sin(t * 7)) * 0.04;
       if (head.current) {
-        head.current.rotation.x = -0.28 + Math.sin(t * 12) * 0.05;
-        head.current.rotation.z = 0;
+        head.current.rotation.x = -0.22 + Math.sin(t * 12) * 0.05;
+        head.current.rotation.z = Math.sin(t * 3) * 0.08;
       }
-      if (neck.current) neck.current.rotation.x = -0.15;
-      setLimb(hipFL, kneeFL, ankleFL, 0.05, 0.2, 0);
-      setLimb(hipFR, kneeFR, ankleFR, 0.05, 0.2, 0);
-      setLimb(hipBL, kneeBL, ankleBL, 0.08, 0.22, 0);
-      setLimb(hipBR, kneeBR, ankleBR, 0.08, 0.22, 0);
+      if (neck.current) neck.current.rotation.x = -0.12;
+      const tip = Math.sin(t * 5) * 0.08;
+      setLimb(hipFL, kneeFL, ankleFL, tip, 0.2, 0);
+      setLimb(hipFR, kneeFR, ankleFR, -tip, 0.2, 0);
+      setLimb(hipBL, kneeBL, ankleBL, 0.06, 0.22, 0);
+      setLimb(hipBR, kneeBR, ankleBR, -0.06, 0.22, 0);
     } else if (state === BRUNO_STATES.Excited || state === BRUNO_STATES.Wag) {
       root.current.position.y =
         Math.abs(Math.sin(t * (state === BRUNO_STATES.Excited ? 6.5 : 2.6))) *
@@ -345,12 +348,8 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
       root.current.rotation.x *= 0.85;
     }
 
-    // Face left/right during page run; damp spin when not flipping
-    const targetYaw = facing < 0 ? Math.PI - baseYaw : baseYaw;
-    if (state === BRUNO_STATES.Run) {
-      root.current.rotation.y += (targetYaw - root.current.rotation.y) * 0.18;
-      root.current.rotation.x *= 0.85;
-    } else if (state !== BRUNO_STATES.Spin && state !== BRUNO_STATES.Flip) {
+    // Damp flip spin back to happy facing
+    if (state !== BRUNO_STATES.Spin && state !== BRUNO_STATES.Flip) {
       root.current.rotation.y += (baseYaw - root.current.rotation.y) * 0.12;
       root.current.rotation.x *= 0.85;
     }
@@ -370,12 +369,18 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
         <mesh position={[0, 0.02, 0.12]} material={mats.black} rotation={[0.05, 0, Math.PI / 2]}>
           <capsuleGeometry args={[0.125, 0.2, 8, 16]} />
         </mesh>
-        {/* Shoulder plates */}
+        {/* Shoulder plates + gold trim */}
         <mesh position={[0.09, 0.04, 0.12]} material={mats.blackSoft}>
           <boxGeometry args={[0.06, 0.08, 0.1]} />
         </mesh>
         <mesh position={[-0.09, 0.04, 0.12]} material={mats.blackSoft}>
           <boxGeometry args={[0.06, 0.08, 0.1]} />
+        </mesh>
+        <mesh position={[0.09, 0.08, 0.12]} material={mats.gold}>
+          <boxGeometry args={[0.05, 0.008, 0.08]} />
+        </mesh>
+        <mesh position={[-0.09, 0.08, 0.12]} material={mats.gold}>
+          <boxGeometry args={[0.05, 0.008, 0.08]} />
         </mesh>
         {/* Mid body taper */}
         <mesh position={[0, 0.01, -0.06]} material={mats.blackSoft} rotation={[0, 0, Math.PI / 2]}>
@@ -389,13 +394,20 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag, facing = 1 }) {
         <mesh position={[0, 0.09, 0.02]} material={mats.black}>
           <boxGeometry args={[0.14, 0.04, 0.38]} />
         </mesh>
-        {/* Red spine LED strip */}
+        {/* Red spine LED + silver rail */}
         <mesh position={[0, 0.1, 0.0]} material={mats.spine}>
           <boxGeometry args={[0.012, 0.008, 0.42]} />
         </mesh>
-        {/* Belly mechanical ribs (silver) */}
-        {[-0.06, 0.02, 0.1].map((z) => (
-          <mesh key={z} position={[0, -0.07, z]} material={mats.silver}>
+        <mesh position={[0, 0.095, 0]} material={mats.silver}>
+          <boxGeometry args={[0.028, 0.004, 0.4]} />
+        </mesh>
+        {/* Belly mechanical ribs (silver / gold) */}
+        {[-0.06, 0.02, 0.1].map((z, i) => (
+          <mesh
+            key={z}
+            position={[0, -0.07, z]}
+            material={i === 1 ? mats.gold : mats.silver}
+          >
             <boxGeometry args={[0.07, 0.012, 0.035]} />
           </mesh>
         ))}

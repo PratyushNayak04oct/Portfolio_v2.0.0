@@ -27,8 +27,12 @@ export default function Hero() {
       return undefined;
     }
 
+    // Soft delay so hero rises after the veil starts dissolving — avoids the hitch
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: ease.soft } });
+      const tl = gsap.timeline({
+        defaults: { ease: ease.soft },
+        delay: 0.55,
+      });
 
       tl.fromTo(
         '[data-hero="ambient"]',

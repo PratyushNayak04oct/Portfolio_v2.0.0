@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import BackgroundEnvironment from '@/components/environment/BackgroundEnvironment';
 import Grain from '@/components/environment/Grain';
@@ -32,6 +33,13 @@ function ScrollRuntime() {
 
 export default function ClientShell({ children }) {
   const { loaded } = useLabStore();
+  // Warm WebGL during the loading sequence so the handoff isn't a hitch
+  const [bootScenes, setBootScenes] = useState(false);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setBootScenes(true), 480);
+    return () => window.clearTimeout(id);
+  }, []);
 
   return (
     <>
@@ -46,24 +54,33 @@ export default function ClientShell({ children }) {
       <Grain />
       <CustomCursor />
       <Navigation />
-      {loaded ? (
-        <SceneErrorBoundary
-          fallback={
-            <div className="pointer-events-none fixed inset-0 z-[3]">
-              <ReactorFallback />
-            </div>
-          }
+      {bootScenes ? (
+        <div
+          className={`transition-opacity duration-[1100ms] ease-out ${
+            loaded ? 'opacity-100' : 'opacity-0'
+          }`}
         >
-          <ReactorScene />
-        </SceneErrorBoundary>
-      ) : null}
-      {loaded ? (
-        <SceneErrorBoundary>
-          <BrunoScene />
-        </SceneErrorBoundary>
+          <SceneErrorBoundary
+            fallback={
+              <div className="pointer-events-none fixed inset-0 z-[3]">
+                <ReactorFallback />
+              </div>
+            }
+          >
+            <ReactorScene />
+          </SceneErrorBoundary>
+          <SceneErrorBoundary>
+            <BrunoScene />
+          </SceneErrorBoundary>
+        </div>
       ) : null}
       <ScrollRuntime />
-      <main id="main-content" className="relative z-20 flex-1">
+      <main
+        id="main-content"
+        className={`relative z-20 flex-1 transition-opacity duration-[1000ms] ease-out ${
+          loaded ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
         {children}
       </main>
       <Footer />

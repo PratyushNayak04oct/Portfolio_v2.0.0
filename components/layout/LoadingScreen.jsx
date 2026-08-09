@@ -6,13 +6,13 @@ import { labActions, useLabStore } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import CoreEmblem from '@/components/ui/CoreEmblem';
 
-useGLTF.preload('/models/reactor.glb?v=16');
+useGLTF.preload('/models/reactor.glb?v=17');
 
 const TICK_MS = 5200;
 const CLIMAX_MS = 1050;
-const REVEAL_MS = 850;
-const FLY_MS = 2200;
-const SETTLE_MS = 500;
+const REVEAL_MS = 1400;
+const FLY_MS = 2000;
+const SETTLE_MS = 650;
 const FAILSAFE_MS = 16000;
 
 function easeInCubic(t) {
@@ -69,8 +69,8 @@ export default function LoadingScreen() {
     if (reduced) {
       labActions.setLoaded(true);
       labActions.setCoreDocked(true);
-      setHide(true);
-      return undefined;
+      const id = window.setTimeout(() => setHide(true), 0);
+      return () => window.clearTimeout(id);
     }
 
     const started = performance.now();
@@ -82,6 +82,10 @@ export default function LoadingScreen() {
     let flyTo = { x: 0, y: 0 };
     let flyCtrl = { x: 0, y: 0 };
     let localPhase = 'tick';
+    // Warm store early so ClientShell can begin booting WebGL mid-charge
+    window.setTimeout(() => {
+      if (!finished.current) labActions.setLoaded(true);
+    }, 900);
 
     const finishAll = () => {
       if (finished.current) return;
@@ -91,7 +95,8 @@ export default function LoadingScreen() {
       labActions.setCoreDocked(true);
       setVeilOpacity(0);
       setLoaderOpacity(0);
-      window.setTimeout(() => setHide(true), 380);
+      // Longer soft exit so home content eases in without a hitch
+      window.setTimeout(() => setHide(true), 720);
     };
 
     const tick = (now) => {
@@ -133,12 +138,14 @@ export default function LoadingScreen() {
           setPhase('reveal');
           setChromeOpacity(0);
           setLoaderOpacity(0);
+          // Mark loaded mid-reveal so WebGL is already warm before fly finishes
           labActions.setLoaded(true);
         }
       } else if (localPhase === 'reveal') {
         const r = Math.min(1, (now - phaseAt) / REVEAL_MS);
         const e = easeInOutQuint(r);
-        setVeilOpacity(1 - e * 0.96);
+        // Gentler veil dissolve — keep a soft film until fly starts
+        setVeilOpacity(1 - e * 0.78);
         setGlow(1);
         setProgress(100);
 
@@ -165,7 +172,7 @@ export default function LoadingScreen() {
         const rot = -10 + e * 22;
 
         setGlow(1 - e * 0.25);
-        setVeilOpacity(Math.max(0, 0.05 * (1 - e)));
+        setVeilOpacity(Math.max(0, 0.22 * (1 - e)));
         setCoreSize(size);
 
         if (coreRef.current) {
@@ -216,7 +223,7 @@ export default function LoadingScreen() {
 
   useEffect(() => {
     if (coreDocked && loaded && !hide) {
-      const t = window.setTimeout(() => setHide(true), 220);
+      const t = window.setTimeout(() => setHide(true), 700);
       return () => window.clearTimeout(t);
     }
     return undefined;
@@ -244,17 +251,33 @@ export default function LoadingScreen() {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 55% 50% at 50% 48%, rgba(40,140,220,0.28), transparent 62%), radial-gradient(ellipse 80% 70% at 50% 100%, rgba(20,40,60,0.55), transparent 55%), radial-gradient(ellipse 40% 35% at 18% 22%, rgba(242,140,91,0.12), transparent 70%), radial-gradient(ellipse 35% 30% at 82% 18%, rgba(242,160,80,0.1), transparent 65%)',
+              'radial-gradient(ellipse 55% 50% at 50% 48%, rgba(40,140,220,0.32), transparent 62%), radial-gradient(ellipse 80% 70% at 50% 100%, rgba(20,40,60,0.6), transparent 55%), radial-gradient(ellipse 40% 35% at 18% 22%, rgba(242,140,91,0.16), transparent 70%), radial-gradient(ellipse 35% 30% at 82% 18%, rgba(242,160,80,0.14), transparent 65%)',
+          }}
+        />
+        {/* Perspective floor grid */}
+        <div
+          className="pointer-events-none absolute inset-x-[-20%] bottom-[-5%] h-[55%]"
+          style={{
+            opacity: 0.22 * chromeOpacity,
+            backgroundImage:
+              'linear-gradient(rgba(99,199,217,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(99,199,217,0.12) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+            transform: 'perspective(500px) rotateX(62deg)',
+            maskImage:
+              'linear-gradient(to top, rgba(0,0,0,0.85), transparent 75%)',
+            WebkitMaskImage:
+              'linear-gradient(to top, rgba(0,0,0,0.85), transparent 75%)',
           }}
         />
         {/* Warm bokeh orbs */}
         {[
-          { l: '12%', t: '18%', s: 90, o: 0.18 },
-          { l: '78%', t: '14%', s: 70, o: 0.14 },
-          { l: '88%', t: '62%', s: 110, o: 0.12 },
-          { l: '8%', t: '70%', s: 80, o: 0.1 },
-          { l: '62%', t: '78%', s: 60, o: 0.11 },
-          { l: '28%', t: '82%', s: 50, o: 0.09 },
+          { l: '12%', t: '18%', s: 90, o: 0.2 },
+          { l: '78%', t: '14%', s: 70, o: 0.16 },
+          { l: '88%', t: '62%', s: 110, o: 0.14 },
+          { l: '8%', t: '70%', s: 80, o: 0.12 },
+          { l: '62%', t: '78%', s: 60, o: 0.13 },
+          { l: '28%', t: '82%', s: 50, o: 0.1 },
+          { l: '45%', t: '10%', s: 40, o: 0.12 },
         ].map((b, i) => (
           <span
             key={i}
@@ -266,17 +289,21 @@ export default function LoadingScreen() {
               height: b.s,
               opacity: b.o * chromeOpacity,
               background:
-                'radial-gradient(circle, rgba(255,180,90,0.85), rgba(255,120,40,0.15) 45%, transparent 70%)',
+                i % 2 === 0
+                  ? 'radial-gradient(circle, rgba(255,180,90,0.85), rgba(255,120,40,0.15) 45%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(120,210,255,0.7), rgba(40,140,220,0.12) 45%, transparent 70%)',
               filter: 'blur(8px)',
+              animation: `softPulse ${5 + (i % 3)}s ease-in-out infinite`,
+              animationDelay: `${i * 0.35}s`,
             }}
           />
         ))}
         {/* Fine dust / sparkle field */}
         <div
-          className="absolute inset-0 opacity-[0.14] mix-blend-screen"
+          className="absolute inset-0 opacity-[0.18] mix-blend-screen"
           style={{
             backgroundImage:
-              'radial-gradient(1px 1px at 20% 30%, rgba(200,230,255,0.8), transparent), radial-gradient(1px 1px at 70% 40%, rgba(255,200,120,0.6), transparent), radial-gradient(1.2px 1.2px at 40% 70%, rgba(180,220,255,0.7), transparent), radial-gradient(1px 1px at 85% 75%, rgba(255,220,160,0.5), transparent), radial-gradient(1px 1px at 55% 20%, rgba(200,240,255,0.65), transparent)',
+              'radial-gradient(1px 1px at 20% 30%, rgba(200,230,255,0.8), transparent), radial-gradient(1px 1px at 70% 40%, rgba(255,200,120,0.6), transparent), radial-gradient(1.2px 1.2px at 40% 70%, rgba(180,220,255,0.7), transparent), radial-gradient(1px 1px at 85% 75%, rgba(255,220,160,0.5), transparent), radial-gradient(1px 1px at 55% 20%, rgba(200,240,255,0.65), transparent), radial-gradient(1px 1px at 32% 55%, rgba(255,210,140,0.55), transparent), radial-gradient(1.2px 1.2px at 75% 60%, rgba(160,220,255,0.6), transparent)',
           }}
         />
         {/* Soft vignette */}
@@ -297,15 +324,83 @@ export default function LoadingScreen() {
             filter: 'blur(4px)',
           }}
         />
+        {/* Orbiting energy rings around core */}
+        <div
+          className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2"
+          style={{ opacity: chromeOpacity }}
+        >
+          {[1, 2, 3].map((ring) => (
+            <span
+              key={ring}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+              style={{
+                width: `${18 + ring * 9 + intensity * 6}vmin`,
+                height: `${18 + ring * 9 + intensity * 6}vmin`,
+                borderColor:
+                  ring === 2
+                    ? `rgba(242,140,91,${0.12 + intensity * 0.18})`
+                    : `rgba(99,199,217,${0.1 + intensity * 0.16})`,
+                boxShadow:
+                  ring === 2
+                    ? `0 0 24px rgba(242,140,91,${0.12 + intensity * 0.15})`
+                    : `0 0 20px rgba(99,199,217,${0.1 + intensity * 0.12})`,
+                animation: `softPulse ${3.5 + ring * 0.8}s ease-in-out infinite`,
+                animationDelay: `${ring * 0.2}s`,
+                transform: `translate(-50%, -50%) rotateX(${58 + ring * 4}deg)`,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div
-        className="absolute inset-x-0 top-[14%] flex flex-col items-center"
+        className="absolute inset-x-0 top-[11%] flex flex-col items-center gap-3"
         style={{ opacity: chromeOpacity }}
       >
-        <p className="font-mono text-tech uppercase tracking-[0.22em] text-ink-muted">
+        <p className="font-display text-sub font-medium tracking-[0.18em] text-ink">
+          PRATYUSH®
+        </p>
+        <p className="font-mono text-tech uppercase tracking-[0.22em] text-cyan">
           Midnight Lab // Core Ignition
         </p>
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+          {['REACTOR', 'PALLADIUM', 'B.R.U.N.O.', 'SYSTEMS'].map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-tech uppercase tracking-[0.14em] text-ink-secondary"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Side telemetry panels */}
+      <div
+        className="pointer-events-none absolute top-[28%] hidden flex-col gap-3 md:left-10 md:flex lg:left-16"
+        style={{ opacity: chromeOpacity * 0.85 }}
+      >
+        {['PWR 12%', 'TEMP STABLE', 'LINK OK'].map((line) => (
+          <span
+            key={line}
+            className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
+          >
+            {line}
+          </span>
+        ))}
+      </div>
+      <div
+        className="pointer-events-none absolute top-[28%] hidden flex-col items-end gap-3 md:right-10 md:flex lg:right-16"
+        style={{ opacity: chromeOpacity * 0.85 }}
+      >
+        {['SEQ 01', 'CORE LOCK', 'IGNITE'].map((line) => (
+          <span
+            key={line}
+            className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
+          >
+            {line}
+          </span>
+        ))}
       </div>
 
       {/* Flying / pulsing core emblem */}
