@@ -33,7 +33,7 @@ export default function Experience() {
   }, [reduced]);
 
   return (
-    <section id="experience" className="relative z-10 section-space">
+    <section id="experience" className="relative z-20 section-space">
       <div className="content-grid">
         <div ref={headingRef} className="will-change-transform">
           <SectionHeading

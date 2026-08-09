@@ -5,8 +5,9 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
+import { useLabStore } from '@/lib/labStore';
 
-const MODEL_URL = '/models/reactor.glb?v=6';
+const MODEL_URL = '/models/reactor.glb?v=8';
 
 /**
  * Front-facing Blender reactor (palladium triangle core toward camera).
@@ -14,6 +15,7 @@ const MODEL_URL = '/models/reactor.glb?v=6';
  * Layout/layers follow scroll progress with near-direct sync (minimal lag).
  */
 export default function ReactorModel({ reducedMotion }) {
+  const { coreDocked } = useLabStore();
   const { scene } = useGLTF(MODEL_URL);
   const root = useRef(null);
   const groups = useRef({});
@@ -46,10 +48,17 @@ export default function ReactorModel({ reducedMotion }) {
           obj.name.includes('Acrylic') ||
           obj.name.includes('Magnetic') ||
           obj.name.includes('Conduit');
+        // Circle bars the copper windings revolve on
+        const isCoilBar =
+          obj.name.startsWith('CoilBlock') ||
+          obj.name.startsWith('CoilBar') ||
+          obj.name.startsWith('CoilForm') ||
+          obj.name.startsWith('CoilBobbin');
         const isCopper =
-          name.includes('copper') ||
-          obj.name.includes('CoilWire') ||
-          obj.name.includes('Copper');
+          !isCoilBar &&
+          (name.includes('copper') ||
+            obj.name.includes('CoilWire') ||
+            obj.name.includes('Copper'));
 
         if (isPalladium) {
           m.color = new THREE.Color('#e8eef5');
@@ -71,6 +80,11 @@ export default function ReactorModel({ reducedMotion }) {
           m.emissiveIntensity = 0.85;
           m.toneMapped = true;
           glow.push({ m, base: 0.8 });
+        } else if (isCoilBar && m.color) {
+          m.color = new THREE.Color('#9aa6b2');
+          m.metalness = 0.96;
+          m.roughness = 0.2;
+          if (m.emissive) m.emissiveIntensity = 0;
         } else if (isCopper && m.color) {
           m.color = new THREE.Color('#b8734a');
           m.metalness = 0.9;
@@ -135,6 +149,8 @@ export default function ReactorModel({ reducedMotion }) {
         n.includes('Palladium')
       ) {
         map.core.push(obj);
+        // Hidden until loading-screen core docks into the reactor
+        obj.visible = false;
       } else if (n.startsWith('LightRing')) map.emitter.push(obj);
       else if (
         n.startsWith('BackPlate') ||
@@ -148,6 +164,12 @@ export default function ReactorModel({ reducedMotion }) {
 
     groups.current = map;
   }, [cloned]);
+
+  useEffect(() => {
+    (groups.current.core || []).forEach((obj) => {
+      obj.visible = !!coreDocked;
+    });
+  }, [coreDocked]);
 
   const current = useRef({
     outerShell: { z: 0, scale: 1, opacity: 1, radial: 0 },

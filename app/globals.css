@@ -218,9 +218,47 @@
   }
 }
 
-/* Canvas shell */
+/* Canvas shell — sits under copy */
 .reactor-canvas {
   touch-action: none;
+}
+
+/* Text depth so copy stays readable over the moving reactor */
+.text-depth {
+  position: relative;
+  z-index: 2;
+  text-shadow:
+    0 1px 0 rgba(5, 8, 11, 0.55),
+    0 2px 18px rgba(5, 8, 11, 0.65),
+    0 0 40px rgba(5, 8, 11, 0.45);
+}
+
+.text-depth-soft {
+  position: relative;
+  z-index: 2;
+  text-shadow:
+    0 1px 12px rgba(5, 8, 11, 0.55),
+    0 0 28px rgba(5, 8, 11, 0.35);
+}
+
+.copy-above-reactor {
+  position: relative;
+  z-index: 5;
+  isolation: isolate;
+}
+
+.copy-above-reactor::before {
+  content: '';
+  position: absolute;
+  inset: -8% -6% -8% -10%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 70% at 30% 45%,
+    rgba(5, 10, 14, 0.72),
+    rgba(5, 10, 14, 0.28) 55%,
+    transparent 78%
+  );
 }
 
 .mask-reveal {

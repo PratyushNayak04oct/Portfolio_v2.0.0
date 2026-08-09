@@ -47,7 +47,7 @@ export default function ClientShell({ children }) {
       {loaded ? (
         <SceneErrorBoundary
           fallback={
-            <div className="pointer-events-none fixed inset-0 z-[5]">
+            <div className="pointer-events-none fixed inset-0 z-[3]">
               <ReactorFallback />
             </div>
           }
@@ -61,7 +61,7 @@ export default function ClientShell({ children }) {
         </SceneErrorBoundary>
       ) : null}
       <ScrollRuntime />
-      <main id="main-content" className="relative z-10 flex-1">
+      <main id="main-content" className="relative z-20 flex-1">
         {children}
       </main>
       <Footer />

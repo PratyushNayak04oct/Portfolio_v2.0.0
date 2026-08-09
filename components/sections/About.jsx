@@ -8,7 +8,7 @@ export default function About() {
   const parallax = useParallax(36);
 
   return (
-    <section id="about" className="relative z-10 section-space">
+    <section id="about" className="relative z-20 section-space">
       <div className="content-grid grid grid-cols-12 gap-x-8 gap-y-14 lg:gap-x-12">
         <div ref={parallax} className="col-span-12 will-change-transform lg:col-span-7">
           <SectionHeading eyebrow="01 — About" title="I BUILD SYSTEMS." />

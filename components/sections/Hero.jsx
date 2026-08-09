@@ -85,29 +85,29 @@ export default function Hero() {
     <section
       id="hero"
       ref={root}
-      className="relative z-10 flex min-h-[100svh] items-center pt-28 pb-20"
+      className="relative z-20 flex min-h-[100svh] items-center pt-28 pb-20"
     >
       <div className="content-grid grid w-full grid-cols-12 gap-10 lg:gap-12">
-        <div className="col-span-12 flex flex-col justify-center lg:col-span-6">
+        <div className="copy-above-reactor col-span-12 flex flex-col justify-center lg:col-span-6">
           <p
             data-hero="meta"
-            className="font-mono text-tech uppercase tracking-[0.18em] text-ink-muted opacity-0"
+            className="text-depth-soft font-mono text-tech uppercase tracking-[0.18em] text-ink-muted opacity-0"
           >
             LAB.COORD // 00.01 — MIDNIGHT
           </p>
 
           <p
             data-hero="brand"
-            className="mt-8 font-display text-sub font-medium tracking-[0.1em] text-ink opacity-0"
+            className="text-depth mt-8 font-display text-sub font-medium tracking-[0.1em] text-ink opacity-0"
           >
             {site.brand}
           </p>
 
-          <p className="mt-3 font-mono text-tech uppercase tracking-[0.14em] text-cyan opacity-90">
+          <p className="text-depth-soft mt-3 font-mono text-tech uppercase tracking-[0.14em] text-cyan opacity-90">
             {site.roles.join(' · ')}
           </p>
 
-          <h1 className="mt-10 font-display font-medium text-ink">
+          <h1 className="text-depth mt-10 font-display font-medium text-ink">
             <span data-hero="line" className="block text-hero opacity-0">
               I BUILD
             </span>
@@ -121,7 +121,7 @@ export default function Hero() {
 
           <p
             data-hero="support"
-            className="mt-8 max-w-md text-sub leading-relaxed text-ink-secondary opacity-0"
+            className="text-depth-soft mt-8 max-w-md text-sub leading-relaxed text-ink-secondary opacity-0"
           >
             And experiences that feel alive.
           </p>

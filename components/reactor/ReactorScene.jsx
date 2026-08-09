@@ -100,7 +100,7 @@ export default function ReactorScene() {
 
   if (!webgl) {
     return (
-      <div className="pointer-events-none fixed inset-0 z-[5]">
+      <div className="pointer-events-none fixed inset-0 z-[3]">
         <div className="absolute inset-0 flex items-center justify-center">
           <ReactorFallback />
         </div>
@@ -110,7 +110,7 @@ export default function ReactorScene() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[5]">
+    <div className="pointer-events-none fixed inset-0 z-[3]">
       <div className="absolute inset-0">
         <Canvas
           className="reactor-canvas"

@@ -44,7 +44,7 @@ export default function Projects() {
   }, [reduced, isDesktop]);
 
   return (
-    <section id="projects" ref={sectionRef} className="relative z-10">
+    <section id="projects" ref={sectionRef} className="relative z-20">
       <div className="content-grid section-space pb-8 md:pb-10">
         <SectionHeading
           eyebrow="04 — Work"

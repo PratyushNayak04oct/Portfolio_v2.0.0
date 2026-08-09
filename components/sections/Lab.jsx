@@ -39,7 +39,7 @@ export default function Lab() {
   const headingRef = useParallax(22);
 
   return (
-    <section id="lab" className="relative z-10 section-space">
+    <section id="lab" className="relative z-20 section-space">
       <div className="content-grid">
         <div ref={headingRef} className="will-change-transform">
           <SectionHeading
