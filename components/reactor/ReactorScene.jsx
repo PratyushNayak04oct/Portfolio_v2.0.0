@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import ReactorModel from './ReactorModel';
@@ -21,16 +20,18 @@ function ReactorRig({ reducedMotion }) {
   const group = useRef(null);
   const pointer = useDampedPointer(damp.reactor);
   const { camera } = useThree();
-  const camCurrent = useRef({ z: 3.5, fov: 32 });
+  const camCurrent = useRef({ z: 3.15, fov: 30 });
+  const lastFov = useRef(30);
 
   useFrame((_, delta) => {
     if (!group.current) return;
     const t = reactorScroll.target;
-    const k = reducedMotion ? 1 : 1 - Math.exp(-6 * delta);
+    const d = Math.min(delta, 1 / 30);
+    const k = reducedMotion ? 1 : 1 - Math.exp(-7 * d);
 
-    // Soft hover parallax — kept small so it doesn't fight top-front reveal
-    const tx = pointer.current.x * 0.08;
-    const ty = -pointer.current.y * 0.055;
+    // Tiny hover — large tilt was a major lag feel on dense meshes
+    const tx = pointer.current.x * 0.045;
+    const ty = -pointer.current.y * 0.03;
     group.current.rotation.y += (tx - group.current.rotation.y) * k;
     group.current.rotation.x += (ty - group.current.rotation.x) * k;
 
@@ -38,8 +39,11 @@ function ReactorRig({ reducedMotion }) {
       camCurrent.current.z += ((t.camera.z ?? 3.6) - camCurrent.current.z) * k;
       camCurrent.current.fov += ((t.camera.fov ?? 34) - camCurrent.current.fov) * k;
       camera.position.z = camCurrent.current.z;
-      camera.fov = camCurrent.current.fov;
-      camera.updateProjectionMatrix();
+      if (Math.abs(camCurrent.current.fov - lastFov.current) > 0.02) {
+        camera.fov = camCurrent.current.fov;
+        camera.updateProjectionMatrix();
+        lastFov.current = camCurrent.current.fov;
+      }
     }
   });
 
@@ -53,30 +57,19 @@ function ReactorRig({ reducedMotion }) {
 function SceneContent({ reducedMotion, lowPower }) {
   return (
     <>
-      <ambientLight intensity={0.6} color="#c8d8e8" />
-      <hemisphereLight intensity={0.55} color="#e8f0f6" groundColor="#081018" />
-      <directionalLight position={[2.5, 3, 5]} intensity={1.2} color="#ffffff" />
-      <directionalLight position={[-2.5, 1, 3]} intensity={0.45} color="#7aa8c8" />
+      <ambientLight intensity={0.62} color="#c8d8e8" />
+      <hemisphereLight intensity={0.5} color="#e8f0f6" groundColor="#081018" />
+      <directionalLight position={[2.5, 3, 5]} intensity={1.15} color="#ffffff" />
+      <directionalLight position={[-2.5, 1, 3]} intensity={0.4} color="#7aa8c8" />
 
       <ReactorRig reducedMotion={reducedMotion} />
 
-      {!lowPower && (
-        <ContactShadows
-          position={[0, -1.5, 0]}
-          opacity={0.22}
-          scale={10}
-          blur={2.4}
-          far={3.5}
-          color="#030a10"
-        />
-      )}
-
-      {!reducedMotion && (
-        <EffectComposer multisampling={0}>
+      {!reducedMotion && !lowPower && (
+        <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom
-            intensity={lowPower ? 0.18 : 0.28}
-            luminanceThreshold={0.58}
-            luminanceSmoothing={0.9}
+            intensity={0.22}
+            luminanceThreshold={0.62}
+            luminanceSmoothing={0.85}
             mipmapBlur
           />
         </EffectComposer>
@@ -114,13 +107,20 @@ export default function ReactorScene() {
       <div className="absolute inset-0">
         <Canvas
           className="reactor-canvas"
-          dpr={lowPower ? [1, 1.35] : [1, 1.75]}
+          dpr={lowPower ? [1, 1.25] : [1, 1.5]}
           camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 50 }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+          gl={{
+            antialias: !lowPower,
+            alpha: true,
+            powerPreference: 'high-performance',
+            stencil: false,
+            depth: true,
+          }}
+          performance={{ min: 0.5 }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.08;
+            gl.toneMappingExposure = 1.06;
           }}
           style={{ background: 'transparent' }}
         >

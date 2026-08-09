@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { site } from '@/data/site';
 import { useLabStore } from '@/lib/labStore';
 import { getLenis } from '@/hooks/useLenis';
+import CoreEmblem from '@/components/ui/CoreEmblem';
 
 function scrollToHash(href) {
   const id = href.replace('#', '');
@@ -18,7 +19,7 @@ function scrollToHash(href) {
 }
 
 export default function Navigation() {
-  const { activeSection, power, reactorStatus } = useLabStore();
+  const { activeSection, power, reactorStatus, coreDocked } = useLabStore();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -63,10 +64,19 @@ export default function Navigation() {
         <a
           href="#hero"
           data-cursor="interactive"
-          className="font-display text-nav font-medium tracking-[0.14em] text-ink"
+          className="flex items-center gap-2.5 font-display text-nav font-medium tracking-[0.14em] text-ink"
           onClick={(e) => onNavClick(e, '#hero')}
         >
-          {site.brand}
+          <span
+            data-nav-core
+            className={`inline-flex items-center justify-center transition-opacity duration-500 ${
+              coreDocked ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ width: 28, height: 28 }}
+          >
+            {coreDocked ? <CoreEmblem size={28} glow={0.78} /> : null}
+          </span>
+          <span>{site.brand}</span>
         </a>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">

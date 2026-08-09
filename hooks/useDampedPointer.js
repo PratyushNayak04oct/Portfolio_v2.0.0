@@ -21,8 +21,13 @@ export function useDampedPointer(factor = damp.pointer) {
     };
 
     const tick = () => {
-      current.current.x += (target.current.x - current.current.x) * factor;
-      current.current.y += (target.current.y - current.current.y) * factor;
+      const dx = target.current.x - current.current.x;
+      const dy = target.current.y - current.current.y;
+      // Skip micro-updates when already settled (cuts idle GPU churn)
+      if (Math.abs(dx) > 0.0008 || Math.abs(dy) > 0.0008) {
+        current.current.x += dx * factor;
+        current.current.y += dy * factor;
+      }
       raf.current = requestAnimationFrame(tick);
     };
 

@@ -39,30 +39,38 @@ function BrunoCanvas({ state, reducedMotion }) {
   const isMobile = useIsMobile();
   return (
     <Canvas
-      dpr={isMobile ? [1, 1.35] : [1, 1.7]}
+      dpr={isMobile ? [1, 1.2] : [1, 1.45]}
       camera={{ position: [2.1, 1.35, 2.9], fov: 32 }}
-      gl={{ antialias: true, alpha: true, toneMappingExposure: 1.3 }}
+      gl={{
+        antialias: !isMobile,
+        alpha: true,
+        toneMappingExposure: 1.25,
+        powerPreference: 'high-performance',
+      }}
+      performance={{ min: 0.5 }}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
       <ambientLight intensity={0.7} color="#c5e4f0" />
       <hemisphereLight intensity={0.6} color="#e8f4f8" groundColor="#1a2430" />
-      <directionalLight position={[3, 4, 2]} intensity={1.4} color="#ffffff" />
-      <directionalLight position={[-2, 1, -1]} intensity={0.45} color="#7ec8ff" />
+      <directionalLight position={[3, 4, 2]} intensity={1.35} color="#ffffff" />
+      <directionalLight position={[-2, 1, -1]} intensity={0.4} color="#7ec8ff" />
       <Suspense fallback={null}>
         <BrunoModel state={state} />
-        <ContactShadows
-          position={[0, 0, 0]}
-          opacity={0.5}
-          scale={5}
-          blur={2.2}
-          far={2.5}
-        />
-        {!reducedMotion && (
-          <EffectComposer multisampling={0}>
+        {!isMobile && (
+          <ContactShadows
+            position={[0, 0, 0]}
+            opacity={0.4}
+            scale={5}
+            blur={2}
+            far={2.5}
+          />
+        )}
+        {!reducedMotion && !isMobile && (
+          <EffectComposer multisampling={0} enableNormalPass={false}>
             <Bloom
-              intensity={0.55}
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.8}
+              intensity={0.35}
+              luminanceThreshold={0.5}
+              luminanceSmoothing={0.85}
               mipmapBlur
             />
           </EffectComposer>
