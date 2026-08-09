@@ -10,32 +10,32 @@ import ReactorAnnotations from './ReactorAnnotations';
 import ReactorPower from './ReactorPower';
 import ReactorFallback from './ReactorFallback';
 import { useLabStore, labActions } from '@/lib/labStore';
-import { getReactorTarget } from '@/data/reactorStory';
+import { reactorScroll } from '@/lib/reactorScroll';
 import { useDampedPointer } from '@/hooks/useDampedPointer';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { isLowPowerDevice, isWebGLAvailable } from '@/lib/webgl';
 import { damp } from '@/lib/motion';
 
-function ReactorRig({ targetRef, reducedMotion }) {
+function ReactorRig({ reducedMotion }) {
   const group = useRef(null);
   const pointer = useDampedPointer(damp.reactor);
   const { camera } = useThree();
-  const camCurrent = useRef({ z: 3.4, fov: 32 });
+  const camCurrent = useRef({ z: 3.5, fov: 32 });
 
   useFrame((_, delta) => {
     if (!group.current) return;
-    const t = targetRef.current;
-    const k = reducedMotion ? 1 : 1 - Math.exp(-2 * delta);
+    const t = reactorScroll.target;
+    const k = reducedMotion ? 1 : 1 - Math.exp(-14 * delta);
 
-    // Soft hover parallax only — never tips into a side view
-    const tx = pointer.current.x * 0.1;
-    const ty = -pointer.current.y * 0.07;
+    // Soft hover parallax — kept small so it doesn't fight top-front reveal
+    const tx = pointer.current.x * 0.08;
+    const ty = -pointer.current.y * 0.055;
     group.current.rotation.y += (tx - group.current.rotation.y) * k;
     group.current.rotation.x += (ty - group.current.rotation.x) * k;
 
     if (t?.camera) {
-      camCurrent.current.z += ((t.camera.z ?? 3.8) - camCurrent.current.z) * k;
+      camCurrent.current.z += ((t.camera.z ?? 3.6) - camCurrent.current.z) * k;
       camCurrent.current.fov += ((t.camera.fov ?? 34) - camCurrent.current.fov) * k;
       camera.position.z = camCurrent.current.z;
       camera.fov = camCurrent.current.fov;
@@ -45,28 +45,28 @@ function ReactorRig({ targetRef, reducedMotion }) {
 
   return (
     <group ref={group}>
-      <ReactorModel targetRef={targetRef} reducedMotion={reducedMotion} />
+      <ReactorModel reducedMotion={reducedMotion} />
     </group>
   );
 }
 
-function SceneContent({ targetRef, reducedMotion, lowPower }) {
+function SceneContent({ reducedMotion, lowPower }) {
   return (
     <>
-      <ambientLight intensity={0.55} color="#c5e4f0" />
-      <hemisphereLight intensity={0.5} color="#e8f4fa" groundColor="#081018" />
-      <directionalLight position={[2.5, 3, 5]} intensity={1.15} color="#ffffff" />
-      <directionalLight position={[-2.5, 1, 3]} intensity={0.4} color="#5aa8e0" />
+      <ambientLight intensity={0.6} color="#c8d8e8" />
+      <hemisphereLight intensity={0.55} color="#e8f0f6" groundColor="#081018" />
+      <directionalLight position={[2.5, 3, 5]} intensity={1.2} color="#ffffff" />
+      <directionalLight position={[-2.5, 1, 3]} intensity={0.45} color="#7aa8c8" />
 
-      <ReactorRig targetRef={targetRef} reducedMotion={reducedMotion} />
+      <ReactorRig reducedMotion={reducedMotion} />
 
       {!lowPower && (
         <ContactShadows
-          position={[0, -1.7, 0]}
-          opacity={0.25}
-          scale={12}
-          blur={2.6}
-          far={4}
+          position={[0, -1.5, 0]}
+          opacity={0.22}
+          scale={10}
+          blur={2.4}
+          far={3.5}
           color="#030a10"
         />
       )}
@@ -74,8 +74,8 @@ function SceneContent({ targetRef, reducedMotion, lowPower }) {
       {!reducedMotion && (
         <EffectComposer multisampling={0}>
           <Bloom
-            intensity={lowPower ? 0.2 : 0.3}
-            luminanceThreshold={0.55}
+            intensity={lowPower ? 0.18 : 0.28}
+            luminanceThreshold={0.58}
             luminanceSmoothing={0.9}
             mipmapBlur
           />
@@ -86,10 +86,9 @@ function SceneContent({ targetRef, reducedMotion, lowPower }) {
 }
 
 export default function ReactorScene() {
-  const { activeSection, webgl } = useLabStore();
+  const { webgl } = useLabStore();
   const reducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
-  const targetRef = useRef(getReactorTarget('hero'));
   const lowPower = useMemo(
     () => isMobile || (typeof window !== 'undefined' && isLowPowerDevice()),
     [isMobile],
@@ -98,10 +97,6 @@ export default function ReactorScene() {
   useEffect(() => {
     labActions.setWebgl(isWebGLAvailable());
   }, []);
-
-  useEffect(() => {
-    targetRef.current = getReactorTarget(activeSection);
-  }, [activeSection]);
 
   if (!webgl) {
     return (
@@ -120,21 +115,17 @@ export default function ReactorScene() {
         <Canvas
           className="reactor-canvas"
           dpr={lowPower ? [1, 1.35] : [1, 1.75]}
-          camera={{ position: [0, 0, 3.4], fov: 32, near: 0.1, far: 50 }}
+          camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 50 }}
           gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.05;
+            gl.toneMappingExposure = 1.08;
           }}
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={null}>
-            <SceneContent
-              targetRef={targetRef}
-              reducedMotion={reducedMotion}
-              lowPower={lowPower}
-            />
+            <SceneContent reducedMotion={reducedMotion} lowPower={lowPower} />
           </Suspense>
         </Canvas>
       </div>

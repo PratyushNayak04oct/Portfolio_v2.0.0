@@ -4,21 +4,27 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=4';
+const MODEL_URL = '/models/reactor.glb?v=6';
 
 /**
- * Front-facing Blender reactor (triangle core toward camera).
+ * Front-facing Blender reactor (palladium triangle core toward camera).
  * Base +PI/2 X corrects Blender Z-up → glTF Y-up so the face isn't edge-on.
+ * Layout/layers follow scroll progress with near-direct sync (minimal lag).
  */
-export default function ReactorModel({ targetRef, reducedMotion }) {
+export default function ReactorModel({ reducedMotion }) {
   const { scene } = useGLTF(MODEL_URL);
   const root = useRef(null);
   const groups = useRef({});
   const lights = useRef({});
+  const glowMats = useRef([]);
+  const palladiumMats = useRef([]);
 
   const cloned = useMemo(() => {
     const c = scene.clone(true);
+    const glow = [];
+    const palladium = [];
     c.traverse((obj) => {
       if (!obj.isMesh) return;
       obj.castShadow = true;
@@ -27,38 +33,57 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
       mats.forEach((m) => {
         if (!m) return;
         const name = `${m.name || ''} ${obj.name || ''}`.toLowerCase();
+        const isPalladium =
+          name.includes('palladium') ||
+          obj.name.includes('TriangleCore') ||
+          obj.name.includes('Palladium');
+        const isSheen =
+          obj.name.includes('PalladiumSheen') || obj.name.includes('CoreEnergy');
         const isGlow =
           name.includes('glow') ||
           name.includes('acrylic') ||
           obj.name.includes('LightRing') ||
           obj.name.includes('Acrylic') ||
-          obj.name.includes('TriangleCore') ||
-          obj.name.includes('CoreEnergy') ||
           obj.name.includes('Magnetic') ||
           obj.name.includes('Conduit');
         const isCopper =
           name.includes('copper') ||
-          obj.name.includes('Coil') ||
-          obj.name.includes('Copper') ||
-          obj.name.includes('DetailWire');
+          obj.name.includes('CoilWire') ||
+          obj.name.includes('Copper');
 
-        if (isGlow || (m.emissive && m.emissive.r + m.emissive.g + m.emissive.b > 0.02)) {
-          m.emissive = new THREE.Color('#5ec8e8');
-          m.emissiveIntensity = obj.name.includes('Triangle') ? 1.55 : 0.9;
+        if (isPalladium) {
+          m.color = new THREE.Color('#e8eef5');
+          m.metalness = 1;
+          m.roughness = 0.08;
+          m.emissive = new THREE.Color('#b8d4e8');
+          m.emissiveIntensity = 0.35;
           m.toneMapped = true;
+          palladium.push({ m, sheen: false });
+        } else if (isSheen) {
+          m.emissive = new THREE.Color('#d8f0ff');
+          m.emissiveIntensity = 2.4;
+          m.toneMapped = true;
+          m.transparent = true;
+          m.opacity = 0.55;
+          glow.push({ m, base: 2.1 });
+        } else if (isGlow || (m.emissive && m.emissive.r + m.emissive.g + m.emissive.b > 0.02)) {
+          m.emissive = new THREE.Color('#5ec8e8');
+          m.emissiveIntensity = 0.85;
+          m.toneMapped = true;
+          glow.push({ m, base: 0.8 });
         } else if (isCopper && m.color) {
-          m.color = new THREE.Color('#d48452');
-          m.metalness = 0.92;
-          m.roughness = 0.28;
+          m.color = new THREE.Color('#b8734a');
+          m.metalness = 0.9;
+          m.roughness = 0.32;
         } else if (m.color) {
-          const col = m.color.clone();
-          col.offsetHSL(0, 0.02, 0.05);
-          m.color = col;
-          m.metalness = Math.min(1, (m.metalness ?? 0.8) + 0.04);
-          m.roughness = Math.max(0.18, (m.roughness ?? 0.35) - 0.04);
+          m.color = new THREE.Color('#8a96a3');
+          m.metalness = Math.min(1, (m.metalness ?? 0.85) + 0.08);
+          m.roughness = Math.max(0.16, (m.roughness ?? 0.3) - 0.06);
         }
       });
     });
+    glowMats.current = glow;
+    palladiumMats.current = palladium;
     return c;
   }, [scene]);
 
@@ -104,7 +129,11 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
         n.startsWith('TriFrame')
       ) {
         map.coreHousing.push(obj);
-      } else if (n.includes('Triangle') || n.includes('CoreEnergy')) {
+      } else if (
+        n.includes('Triangle') ||
+        n.includes('CoreEnergy') ||
+        n.includes('Palladium')
+      ) {
         map.core.push(obj);
       } else if (n.startsWith('LightRing')) map.emitter.push(obj);
       else if (
@@ -131,53 +160,50 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
     coreHousing: { z: 0 },
     core: { rotationSpeed: 0.06, emissive: 1.2 },
     emitter: { pulse: 0.22, intensity: 1.05 },
-    layout: { x: 1.2, y: 0.08, scale: 1.55 },
+    layout: { x: 1.15, y: 0.04, scale: 1.42 },
     facing: { x: 0, y: 0 },
   });
 
   useFrame((state, delta) => {
-    const t = targetRef.current;
+    const t = reactorScroll.target;
     if (!t || !root.current) return;
-    const dampAmt = reducedMotion ? 1 : 1 - Math.exp(-2.0 * delta);
+
+    // Fast follow for scroll sync — layout/facing nearly 1:1 with scroll
+    const layoutK = reducedMotion ? 1 : 1 - Math.exp(-18 * delta);
+    const layerK = reducedMotion ? 1 : 1 - Math.exp(-12 * delta);
     const c = current.current;
 
-    const lerpKey = (key, props) => {
+    const lerpKey = (key, props, k) => {
       props.forEach((p) => {
         if (typeof t[key]?.[p] === 'number') {
-          c[key][p] += (t[key][p] - c[key][p]) * dampAmt;
+          c[key][p] += (t[key][p] - c[key][p]) * k;
         }
       });
     };
 
-    lerpKey('outerShell', ['z', 'scale', 'opacity', 'radial']);
-    lerpKey('ring01', ['z', 'rotation']);
-    lerpKey('ring02', ['z', 'rotation']);
-    lerpKey('ring03', ['z', 'rotation']);
-    lerpKey('coolingSystem', ['z', 'radial']);
-    lerpKey('magneticContainment', ['z', 'opacity']);
-    lerpKey('energyConduits', ['intensity', 'sequential']);
-    lerpKey('coreHousing', ['z']);
-    lerpKey('core', ['rotationSpeed', 'emissive']);
-    lerpKey('emitter', ['pulse', 'intensity']);
-    lerpKey('layout', ['x', 'y', 'scale']);
-    lerpKey('facing', ['x', 'y']);
+    lerpKey('outerShell', ['z', 'scale', 'opacity', 'radial'], layerK);
+    lerpKey('ring01', ['z', 'rotation'], layerK);
+    lerpKey('ring02', ['z', 'rotation'], layerK);
+    lerpKey('ring03', ['z', 'rotation'], layerK);
+    lerpKey('coolingSystem', ['z', 'radial'], layerK);
+    lerpKey('magneticContainment', ['z', 'opacity'], layerK);
+    lerpKey('energyConduits', ['intensity', 'sequential'], layerK);
+    lerpKey('coreHousing', ['z'], layerK);
+    lerpKey('core', ['rotationSpeed', 'emissive'], layerK);
+    lerpKey('emitter', ['pulse', 'intensity'], layerK);
+    lerpKey('layout', ['x', 'y', 'scale'], layoutK);
+    lerpKey('facing', ['x', 'y'], layoutK);
 
     root.current.position.x = c.layout.x;
     root.current.position.y = c.layout.y;
     root.current.scale.setScalar(c.layout.scale);
-
-    // Facing stays front; tiny optional offsets only (kept ~0 in story)
     root.current.rotation.x = c.facing.x;
     root.current.rotation.y = c.facing.y;
 
     const breath = reducedMotion
       ? 0
-      : Math.sin(state.clock.elapsedTime * 0.5) * 0.1 * c.emitter.pulse;
+      : Math.sin(state.clock.elapsedTime * 0.5) * 0.08 * c.emitter.pulse;
 
-    /**
-     * After Blender Yup export, reactor depth is on local Y.
-     * Parent R_x(π/2) maps that depth toward the camera (world Z).
-     */
     const shiftDepth = (list, depth, spin = 0) => {
       list.forEach((obj) => {
         if (obj.userData.baseY === undefined) obj.userData.baseY = obj.position.y;
@@ -198,7 +224,6 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
     shiftDepth(g.emitter || [], c.ring01.z * 0.4);
     shiftDepth(g.backPlate || [], c.coreHousing.z * 0.22);
 
-    // Radial expand in the disc plane (glTF X / Z)
     (g.outerShell || []).forEach((obj) => {
       if (
         !obj.name.startsWith('Coil') &&
@@ -216,38 +241,34 @@ export default function ReactorModel({ targetRef, reducedMotion }) {
       obj.position.z = (b.z / len) * len * f;
     });
 
-    cloned.traverse((obj) => {
-      if (!obj.isMesh) return;
-      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-      mats.forEach((m) => {
-        if (!m?.emissive || (m.emissiveIntensity ?? 0) < 0.25) return;
-        const base = obj.name.includes('Triangle') ? 1.45 : 0.85;
-        m.emissiveIntensity = base + c.emitter.intensity * 0.12 + breath;
-      });
+    palladiumMats.current.forEach(({ m }) => {
+      m.emissiveIntensity = 0.28 + c.core.emissive * 0.12 + breath * 0.4;
+    });
+    glowMats.current.forEach(({ m, base }) => {
+      m.emissiveIntensity = base + c.emitter.intensity * 0.1 + breath;
     });
 
     if (lights.current.core) {
-      lights.current.core.intensity = 1.35 + c.emitter.intensity * 0.3 + breath;
+      lights.current.core.intensity = 1.2 + c.emitter.intensity * 0.28 + breath;
     }
   });
 
   return (
     <group ref={root}>
-      {/* Correct Blender face (+Z) so triangle faces the camera, not the rim */}
-      <group rotation={[Math.PI / 2, 0, 0]} scale={0.78}>
+      <group rotation={[Math.PI / 2, 0, 0]} scale={0.62}>
         <primitive object={cloned} />
       </group>
       <pointLight
         ref={(el) => {
           lights.current.core = el;
         }}
-        color="#7ad4ef"
-        intensity={1.5}
-        distance={8}
+        color="#c8e4f5"
+        intensity={1.35}
+        distance={7}
         decay={2}
-        position={[0, 0, 0.55]}
+        position={[0, 0, 0.5]}
       />
-      <pointLight color="#3a7fd4" intensity={0.45} distance={6} position={[0, 0, 1.1]} />
+      <pointLight color="#6a9cc8" intensity={0.4} distance={5.5} position={[0, 0, 1.0]} />
     </group>
   );
 }

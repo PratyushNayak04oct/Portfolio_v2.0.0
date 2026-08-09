@@ -9,6 +9,7 @@ import CustomCursor from '@/components/layout/CustomCursor';
 import Footer from '@/components/layout/Footer';
 import SceneErrorBoundary from '@/components/layout/SceneErrorBoundary';
 import { useSectionProgress } from '@/hooks/useSectionProgress';
+import { useLenis } from '@/hooks/useLenis';
 import { useLabStore } from '@/lib/labStore';
 import ReactorFallback from '@/components/reactor/ReactorFallback';
 
@@ -21,7 +22,8 @@ const BrunoScene = dynamic(() => import('@/components/bruno/BrunoScene'), {
   ssr: false,
 });
 
-function SectionObserver() {
+function ScrollRuntime() {
+  useLenis();
   useSectionProgress();
   return null;
 }
@@ -58,7 +60,7 @@ export default function ClientShell({ children }) {
           <BrunoScene />
         </SceneErrorBoundary>
       ) : null}
-      <SectionObserver />
+      <ScrollRuntime />
       <main id="main-content" className="relative z-10 flex-1">
         {children}
       </main>

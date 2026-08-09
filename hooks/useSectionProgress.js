@@ -4,9 +4,10 @@ import { useEffect } from 'react';
 import { getGsap } from '@/lib/gsap';
 import { sections } from '@/data/site';
 import { labActions } from '@/lib/labStore';
+import { updateReactorScroll } from '@/lib/reactorScroll';
 
 /**
- * Tracks which section is in view and global scroll progress.
+ * Tracks section visibility + drives reactor target from continuous scroll.
  */
 export function useSectionProgress() {
   useEffect(() => {
@@ -16,7 +17,12 @@ export function useSectionProgress() {
     const docTrigger = ScrollTrigger.create({
       start: 0,
       end: 'max',
-      onUpdate: (self) => labActions.setScrollProgress(self.progress),
+      onUpdate: (self) => {
+        labActions.setScrollProgress(self.progress);
+        // Direct mutable write — R3F reads this every frame (no React lag)
+        const blended = updateReactorScroll(self.progress);
+        labActions.setPowerFromBlend(blended);
+      },
     });
     triggers.push(docTrigger);
 
@@ -34,6 +40,9 @@ export function useSectionProgress() {
       });
       triggers.push(t);
     });
+
+    // Seed initial blend
+    updateReactorScroll(0);
 
     return () => {
       triggers.forEach((t) => t.kill());

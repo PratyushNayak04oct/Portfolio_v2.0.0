@@ -3,6 +3,19 @@
 import { useEffect, useState } from 'react';
 import { site } from '@/data/site';
 import { useLabStore } from '@/lib/labStore';
+import { getLenis } from '@/hooks/useLenis';
+
+function scrollToHash(href) {
+  const id = href.replace('#', '');
+  const el = document.getElementById(id);
+  if (!el) return;
+  const lenis = getLenis();
+  if (lenis) {
+    lenis.scrollTo(el, { offset: -24, duration: 1.2 });
+  } else {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
 
 export default function Navigation() {
   const { activeSection, power, reactorStatus } = useLabStore();
@@ -17,11 +30,26 @@ export default function Navigation() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
+    const lenis = getLenis();
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      lenis?.stop();
+    } else {
+      document.body.style.overflow = '';
+      lenis?.start();
+    }
     return () => {
       document.body.style.overflow = '';
+      getLenis()?.start();
     };
   }, [open]);
+
+  const onNavClick = (e, href) => {
+    if (!href.startsWith('#')) return;
+    e.preventDefault();
+    setOpen(false);
+    scrollToHash(href);
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -36,7 +64,7 @@ export default function Navigation() {
           href="#hero"
           data-cursor="interactive"
           className="font-display text-nav font-medium tracking-[0.14em] text-ink"
-          onClick={() => setOpen(false)}
+          onClick={(e) => onNavClick(e, '#hero')}
         >
           {site.brand}
         </a>
@@ -50,6 +78,7 @@ export default function Navigation() {
                 key={item.label}
                 href={item.href}
                 data-cursor="interactive"
+                onClick={(e) => onNavClick(e, item.href)}
                 className={`group relative font-sans text-nav uppercase tracking-[0.14em] transition-colors duration-300 ${
                   active ? 'text-ink' : 'text-ink-secondary hover:text-ink'
                 }`}
@@ -104,7 +133,7 @@ export default function Navigation() {
                 <a
                   href={item.href}
                   className="font-display text-sub text-ink"
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => onNavClick(e, item.href)}
                 >
                   {item.label}
                 </a>
