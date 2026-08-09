@@ -27,72 +27,64 @@ export default function Hero() {
       return undefined;
     }
 
-    // Soft delay so hero rises after the veil starts dissolving — avoids the hitch
+    // Rise with the veil dissolve — no blur filters (those hitch the handoff)
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         defaults: { ease: ease.soft },
-        delay: 0.55,
+        delay: 0.35,
       });
 
       tl.fromTo(
         '[data-hero="ambient"]',
         { autoAlpha: 0 },
-        { autoAlpha: 1, duration: duration.section },
+        { autoAlpha: 1, duration: duration.section * 1.15 },
       )
         .fromTo(
           '[data-hero="meta"]',
-          { autoAlpha: 0, y: 10 },
+          { autoAlpha: 0, y: 14 },
+          { autoAlpha: 1, y: 0, duration: duration.text * 1.1 },
+          '-=0.45',
+        )
+        .fromTo(
+          '[data-hero="brand"]',
+          { autoAlpha: 0, y: 28 },
+          { autoAlpha: 1, y: 0, duration: duration.text * 1.15 },
+          '-=0.25',
+        )
+        .fromTo(
+          '[data-hero="role"]',
+          { autoAlpha: 0, y: 14 },
           { autoAlpha: 1, y: 0, duration: duration.text },
           '-=0.4',
         )
         .fromTo(
-          '[data-hero="brand"]',
-          { autoAlpha: 0, y: 24, filter: 'blur(6px)' },
+          '[data-hero="line"]',
+          { autoAlpha: 0, y: 36 },
           {
             autoAlpha: 1,
             y: 0,
-            filter: 'blur(0px)',
-            duration: duration.text,
+            duration: duration.text * 1.2,
+            stagger: 0.14,
           },
           '-=0.2',
-        )
-        .fromTo(
-          '[data-hero="role"]',
-          { autoAlpha: 0, y: 12 },
-          { autoAlpha: 1, y: 0, duration: duration.text },
-          '-=0.35',
-        )
-        .fromTo(
-          '[data-hero="line"]',
-          { autoAlpha: 0, y: 48, rotateX: 12, filter: 'blur(8px)' },
-          {
-            autoAlpha: 1,
-            y: 0,
-            rotateX: 0,
-            filter: 'blur(0px)',
-            duration: duration.text * 1.1,
-            stagger: 0.16,
-            transformPerspective: 800,
-          },
-          '-=0.15',
         )
         .fromTo(
           '[data-hero="support"]',
-          { autoAlpha: 0, y: 16 },
-          { autoAlpha: 1, y: 0, duration: duration.text },
-          '-=0.25',
+          { autoAlpha: 0, y: 18 },
+          { autoAlpha: 1, y: 0, duration: duration.text * 1.05 },
+          '-=0.3',
         )
         .fromTo(
           '[data-hero="cta"]',
-          { autoAlpha: 0, y: 12 },
-          { autoAlpha: 1, y: 0, duration: duration.button },
-          '-=0.2',
+          { autoAlpha: 0, y: 14 },
+          { autoAlpha: 1, y: 0, duration: duration.button * 1.1 },
+          '-=0.25',
         )
         .fromTo(
           '[data-hero="reactor-slot"]',
           { autoAlpha: 0 },
-          { autoAlpha: 1, duration: duration.cinematic },
-          '-=0.6',
+          { autoAlpha: 1, duration: duration.cinematic * 1.15 },
+          '-=0.7',
         );
     }, root);
 

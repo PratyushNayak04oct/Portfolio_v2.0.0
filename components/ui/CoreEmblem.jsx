@@ -16,13 +16,18 @@ export default function CoreEmblem({
   const g = Math.min(1, Math.max(0, glow));
   const uid = useId().replace(/:/g, '');
 
+  // Loading triangle: no CSS filter — glow comes from loader halo layers (keeps orbits smooth)
+  const glowFilter = triangleOnly
+    ? undefined
+    : `drop-shadow(0 0 ${12 + g * 28}px rgba(100,210,255,${0.5 + g * 0.45})) drop-shadow(0 0 ${32 + g * 60}px rgba(40,160,230,${0.3 + g * 0.4}))`;
+
   return (
     <span
       className={`relative inline-flex items-center justify-center ${className}`}
       style={{
         width: size,
         height: size,
-        filter: `drop-shadow(0 0 ${12 + g * 28}px rgba(100,210,255,${0.5 + g * 0.45})) drop-shadow(0 0 ${32 + g * 60}px rgba(40,160,230,${0.3 + g * 0.4}))`,
+        filter: glowFilter,
       }}
       aria-hidden="true"
     >

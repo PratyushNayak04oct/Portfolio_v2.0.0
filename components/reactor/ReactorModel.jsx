@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=18';
+const MODEL_URL = '/models/reactor.glb?v=19';
 
 /** Shiny brown-red copper — bright metallic with gold sheen */
 function makeLustrousCopper(source) {

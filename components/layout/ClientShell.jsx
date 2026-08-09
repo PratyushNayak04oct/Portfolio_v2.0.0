@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import BackgroundEnvironment from '@/components/environment/BackgroundEnvironment';
 import Grain from '@/components/environment/Grain';
@@ -32,14 +31,9 @@ function ScrollRuntime() {
 }
 
 export default function ClientShell({ children }) {
-  const { loaded } = useLabStore();
-  // Warm WebGL during the loading sequence so the handoff isn't a hitch
-  const [bootScenes, setBootScenes] = useState(false);
-
-  useEffect(() => {
-    const id = window.setTimeout(() => setBootScenes(true), 480);
-    return () => window.clearTimeout(id);
-  }, []);
+  const { loaded, warmBoot } = useLabStore();
+  // Boot WebGL only when the loader signals warmBoot (late charge) — keeps aura smooth
+  const bootScenes = warmBoot || loaded;
 
   return (
     <>
@@ -56,7 +50,7 @@ export default function ClientShell({ children }) {
       <Navigation />
       {bootScenes ? (
         <div
-          className={`transition-opacity duration-[1100ms] ease-out ${
+          className={`transition-opacity duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
             loaded ? 'opacity-100' : 'opacity-0'
           }`}
         >
@@ -77,7 +71,7 @@ export default function ClientShell({ children }) {
       <ScrollRuntime />
       <main
         id="main-content"
-        className={`relative z-20 flex-1 transition-opacity duration-[1000ms] ease-out ${
+        className={`relative z-20 flex-1 transition-opacity duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           loaded ? 'opacity-100' : 'opacity-0'
         }`}
       >
