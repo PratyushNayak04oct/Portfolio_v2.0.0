@@ -64,7 +64,7 @@ export default function Experience() {
                 <h3 className="mt-4 font-display text-project text-ink">
                   {item.role}
                 </h3>
-                <p className="mt-2 font-mono text-meta uppercase text-ink-muted">
+                <p className="mt-2 font-mono text-meta uppercase text-ink-secondary">
                   {item.company}
                 </p>
                 <p className="mt-5 leading-relaxed text-ink-secondary">

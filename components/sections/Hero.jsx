@@ -97,7 +97,7 @@ export default function Hero() {
         <div className="copy-above-reactor copy-plate col-span-12 flex flex-col justify-center lg:col-span-6">
           <p
             data-hero="meta"
-            className="text-depth-soft font-mono text-tech uppercase tracking-[0.18em] text-ink-muted opacity-0"
+            className="text-depth-soft font-mono text-tech uppercase tracking-[0.18em] text-ink-secondary opacity-0"
           >
             LAB.COORD // 00.01 — MIDNIGHT
           </p>

@@ -64,16 +64,16 @@ function SceneContent({ reducedMotion, lowPower }) {
       <hemisphereLight intensity={0.48} color="#efe6dc" groundColor="#081018" />
       <directionalLight position={[2.5, 3, 5]} intensity={1.2} color="#fff6ee" />
       {/* Warm fill keeps polished copper from reading blue under cool key light */}
-      <directionalLight position={[-2.5, 1.4, 3]} intensity={0.55} color="#ffb280" />
-      <directionalLight position={[0.4, -1.2, 2.2]} intensity={0.22} color="#ffd0a8" />
+      <directionalLight position={[-2.5, 1.4, 3]} intensity={0.7} color="#ffb280" />
+      <directionalLight position={[0.4, -1.2, 2.2]} intensity={0.32} color="#ffd0a8" />
 
       <ReactorRig reducedMotion={reducedMotion} />
 
       {!reducedMotion && !lowPower && (
         <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom
-            intensity={0.22}
-            luminanceThreshold={0.62}
+            intensity={0.2}
+            luminanceThreshold={0.72}
             luminanceSmoothing={0.85}
             mipmapBlur
           />

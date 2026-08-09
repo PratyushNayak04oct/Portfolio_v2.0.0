@@ -88,7 +88,7 @@ export default function Contact() {
           className="col-span-12 opacity-0 lg:col-span-3 lg:col-start-10"
         >
           <div className="glass-panel rounded-2xl p-7 md:p-8">
-            <p className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted">
+            <p className="font-mono text-tech uppercase tracking-[0.16em] text-ink-secondary">
               Reactor power
             </p>
             <p className="mt-4 font-display text-project text-ink">

@@ -6,24 +6,25 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=12';
+const MODEL_URL = '/models/reactor.glb?v=13';
 
-function applyLustrousCopper(m) {
-  // Classic polished copper — warm orange-brown, mirror metal, never cyan
-  if (m.color) m.color.set('#c87533');
-  m.metalness = 1;
-  m.roughness = 0.09;
-  if (m.emissive) {
-    m.emissive.set('#2a1006');
-    m.emissiveIntensity = 0.12;
-  }
-  if ('envMapIntensity' in m) m.envMapIntensity = 1.55;
-  if ('clearcoat' in m) {
-    m.clearcoat = 0.35;
-    m.clearcoatRoughness = 0.18;
-  }
-  m.toneMapped = true;
-  m.needsUpdate = true;
+/** Polished copper — physical material so clearcoat/specular actually shine */
+function makeLustrousCopper(source) {
+  const m = new THREE.MeshPhysicalMaterial({
+    color: '#e09245',
+    metalness: 1,
+    roughness: 0.045,
+    emissive: new THREE.Color('#402010'),
+    emissiveIntensity: 0.07,
+    envMapIntensity: 2.35,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.07,
+    reflectivity: 1,
+    ior: 1.35,
+    toneMapped: true,
+  });
+  if (source?.name) m.name = source.name;
+  return m;
 }
 
 /**
@@ -101,8 +102,12 @@ export default function ReactorModel({ reducedMotion }) {
           if (m.color) m.color = new THREE.Color(hot ? '#d0f0ff' : '#2a6a90');
           glow.push({ m, base: hot ? 4.0 : 2.2 });
         } else if (isCopper) {
-          // Must run before glow — Blender copper often carries mild emissive
-          applyLustrousCopper(m);
+          // Must run before glow — swap to physical copper so wires read lustrous
+          const copper = makeLustrousCopper(m);
+          const idx = mats.indexOf(m);
+          if (idx >= 0) mats[idx] = copper;
+          if (Array.isArray(obj.material)) obj.material[idx] = copper;
+          else obj.material = copper;
         } else if (isPlate && m.color) {
           m.color = new THREE.Color(
             obj.name.startsWith('CoreBolt') || obj.name === 'CoreWell'
@@ -129,7 +134,11 @@ export default function ReactorModel({ reducedMotion }) {
           const looksCopper =
             col.r > 0.35 && col.g > 0.15 && col.g < 0.55 && col.b < 0.28;
           if (looksCopper) {
-            applyLustrousCopper(m);
+            const copper = makeLustrousCopper(m);
+            const idx = mats.indexOf(m);
+            if (idx >= 0) mats[idx] = copper;
+            if (Array.isArray(obj.material)) obj.material[idx] = copper;
+            else obj.material = copper;
           } else {
             m.color = new THREE.Color('#8a96a3');
             m.metalness = Math.min(1, (m.metalness ?? 0.85) + 0.08);
@@ -220,8 +229,8 @@ export default function ReactorModel({ reducedMotion }) {
     magneticContainment: { z: 0, opacity: 1 },
     energyConduits: { intensity: 0.4, sequential: 0.2 },
     coreHousing: { z: 0 },
-    core: { rotationSpeed: 0.06, emissive: 1.2 },
-    emitter: { pulse: 0.22, intensity: 1.05 },
+    core: { rotationSpeed: 0.12, emissive: 1.35 },
+    emitter: { pulse: 0.32, intensity: 1.2 },
     layout: { x: 1.15, y: 0.04, scale: 1.42 },
     facing: { x: 0, y: 0 },
   });
@@ -232,8 +241,8 @@ export default function ReactorModel({ reducedMotion }) {
 
     // Cap delta to avoid spiral-of-death hitching on hover frame drops
     const d = Math.min(delta, 1 / 30);
-    const layoutK = reducedMotion ? 1 : 1 - Math.exp(-4.2 * d);
-    const layerK = reducedMotion ? 1 : 1 - Math.exp(-3.4 * d);
+    const layoutK = reducedMotion ? 1 : 1 - Math.exp(-5.8 * d);
+    const layerK = reducedMotion ? 1 : 1 - Math.exp(-4.8 * d);
     const c = current.current;
 
     const lerpKey = (key, props, k) => {
@@ -265,7 +274,7 @@ export default function ReactorModel({ reducedMotion }) {
 
     const breath = reducedMotion
       ? 0
-      : Math.sin(state.clock.elapsedTime * 0.5) * 0.08 * c.emitter.pulse;
+      : Math.sin(state.clock.elapsedTime * 0.85) * 0.12 * c.emitter.pulse;
 
     const shiftDepth = (list, depth, spin = 0) => {
       list.forEach((obj) => {
@@ -277,13 +286,13 @@ export default function ReactorModel({ reducedMotion }) {
 
     const g = groups.current;
     shiftDepth(g.outerShell || [], c.outerShell.z);
-    shiftDepth(g.ring01 || [], c.ring01.z, 0.03 + c.ring01.rotation);
-    shiftDepth(g.ring02 || [], c.ring02.z, -(0.025 + Math.abs(c.ring02.rotation)));
-    shiftDepth(g.ring03 || [], c.ring03.z, 0.035 + c.ring03.rotation);
+    shiftDepth(g.ring01 || [], c.ring01.z, 0.065 + c.ring01.rotation);
+    shiftDepth(g.ring02 || [], c.ring02.z, -(0.055 + Math.abs(c.ring02.rotation)));
+    shiftDepth(g.ring03 || [], c.ring03.z, 0.075 + c.ring03.rotation);
     shiftDepth(g.coolingSystem || [], c.coolingSystem.z);
     shiftDepth(g.magneticContainment || [], c.magneticContainment.z);
     shiftDepth(g.coreHousing || [], c.coreHousing.z);
-    shiftDepth(g.core || [], c.coreHousing.z * 0.35, c.core.rotationSpeed * 0.35);
+    shiftDepth(g.core || [], c.coreHousing.z * 0.35, c.core.rotationSpeed * 0.55);
     shiftDepth(g.emitter || [], c.ring01.z * 0.4);
     shiftDepth(g.backPlate || [], c.coreHousing.z * 0.22);
 
@@ -323,14 +332,15 @@ export default function ReactorModel({ reducedMotion }) {
           lights.current.core = el;
         }}
         color="#8adfff"
-        intensity={0.95}
-        distance={4.2}
+        intensity={0.65}
+        distance={3.8}
         decay={2}
         position={[0, 0, 0.5]}
       />
       {/* Warm rim so copper windings stay lustrous, not cyan-washed */}
-      <pointLight color="#ff9a55" intensity={0.7} distance={4.5} decay={2} position={[0.9, 0.2, 0.85]} />
-      <pointLight color="#e8f4ff" intensity={0.22} distance={4} position={[0, 0, 1.0]} />
+      <pointLight color="#ff9a55" intensity={1.05} distance={4.8} decay={2} position={[0.9, 0.2, 0.85]} />
+      <pointLight color="#ffc090" intensity={0.45} distance={4.2} decay={2} position={[-0.85, -0.15, 0.7]} />
+      <pointLight color="#e8f4ff" intensity={0.18} distance={4} position={[0, 0, 1.0]} />
     </group>
   );
 }

@@ -11,7 +11,7 @@ export default function ProjectCard({ project, index }) {
       className="group relative flex h-full min-w-[88vw] flex-col justify-between overflow-hidden rounded-2xl border border-white/5 bg-secondary/25 p-7 transition-[border-color,transform,background] duration-500 ease-out hover:border-cyan/35 hover:bg-secondary/40 md:min-w-[40vw] md:p-9"
     >
       <div>
-        <p className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted">
+        <p className="font-mono text-tech uppercase tracking-[0.16em] text-ink-secondary">
           {String(index + 1).padStart(2, '0')} — {project.year}
         </p>
         <h3 className="mt-5 font-display text-project text-ink transition-transform duration-500 ease-out group-hover:translate-x-[3px]">

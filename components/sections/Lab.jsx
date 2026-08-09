@@ -70,7 +70,7 @@ export default function Lab() {
                       <span className="font-display text-sub text-ink">
                         {exp.title}
                       </span>
-                      <span className="font-mono text-tech uppercase text-ink-muted">
+                      <span className="font-mono text-tech uppercase text-ink-secondary">
                         {exp.tag}
                       </span>
                     </button>

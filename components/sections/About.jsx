@@ -30,14 +30,14 @@ export default function About() {
             <div className="flex flex-col gap-8">
               <AnimatedText
                 as="p"
-                className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
+                className="font-mono text-tech uppercase tracking-[0.16em] text-ink-secondary"
               >
                 Creative Developer
               </AnimatedText>
               <AnimatedText
                 as="p"
                 delay={0.08}
-                className="font-mono text-tech uppercase tracking-[0.16em] text-ink-muted"
+                className="font-mono text-tech uppercase tracking-[0.16em] text-ink-secondary"
               >
                 Interactive Experiences
               </AnimatedText>

@@ -7,7 +7,7 @@ export default function StatusIndicator({
 }) {
   return (
     <div
-      className={`font-mono text-tech uppercase tracking-[0.16em] text-ink-muted ${className}`}
+      className={`font-mono text-tech uppercase tracking-[0.16em] text-ink-secondary ${className}`}
     >
       <span className="text-ink-secondary">{label}</span>
       <span className="mx-2 text-line">/</span>
