@@ -1,0 +1,235 @@
+@import "tailwindcss";
+
+:root {
+  --bg-deepest: #05080b;
+  --bg-primary: #081118;
+  --bg-secondary: #0d1820;
+  --surface: #111f28;
+  --blue: #2678ff;
+  --cyan: #63c7d9;
+  --teal: #19b6a5;
+  --orange: #f28c5b;
+  --text-primary: #e8f0f4;
+  --text-secondary: #91a3ad;
+  --text-muted: #52636d;
+  --border: #22343f;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --color-deepest: var(--bg-deepest);
+  --color-primary: var(--bg-primary);
+  --color-secondary: var(--bg-secondary);
+  --color-surface: var(--surface);
+  --color-blue: var(--blue);
+  --color-cyan: var(--cyan);
+  --color-teal: var(--teal);
+  --color-orange: var(--orange);
+  --color-ink: var(--text-primary);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+  --color-line: var(--border);
+
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-ibm-plex-mono);
+
+  --text-hero: clamp(3.5rem, 8vw, 8.5rem);
+  --text-statement: clamp(2.75rem, 6vw, 5.5rem);
+  --text-section: clamp(2.25rem, 5vw, 4rem);
+  --text-project: clamp(2rem, 4vw, 3.5rem);
+  --text-sub: clamp(1.25rem, 2vw, 1.75rem);
+  --text-body: clamp(1.0625rem, 1.1vw, 1.1875rem);
+  --text-nav: clamp(0.8125rem, 0.9vw, 0.9375rem);
+  --text-meta: clamp(0.6875rem, 0.8vw, 0.8125rem);
+  --text-tech: clamp(0.625rem, 0.7vw, 0.75rem);
+}
+
+@utility sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@utility not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+@layer base {
+  html {
+    scroll-behavior: auto;
+    background: var(--bg-deepest);
+    color: var(--text-primary);
+  }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    font-size: var(--text-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--blue) 40%, transparent);
+    color: var(--text-primary);
+  }
+
+  :focus-visible {
+    outline: 1px solid color-mix(in srgb, var(--cyan) 70%, transparent);
+    outline-offset: 3px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* Custom scrollbar */
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-deepest);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--border) 80%, var(--cyan));
+    border-radius: 999px;
+  }
+}
+
+/* Smoked glass — nav / panels only */
+@utility glass-panel {
+  background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, var(--cyan) 20%);
+}
+
+@utility text-hero {
+  font-size: var(--text-hero);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+@utility text-statement {
+  font-size: var(--text-statement);
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+@utility text-section {
+  font-size: var(--text-section);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+@utility text-project {
+  font-size: var(--text-project);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+@utility text-sub {
+  font-size: var(--text-sub);
+  line-height: 1.3;
+}
+
+@utility text-nav {
+  font-size: var(--text-nav);
+  letter-spacing: 0.08em;
+}
+
+@utility text-meta {
+  font-size: var(--text-meta);
+  letter-spacing: 0.12em;
+}
+
+@utility text-tech {
+  font-size: var(--text-tech);
+  letter-spacing: 0.14em;
+}
+
+/* Film grain overlay */
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hide default cursor on fine pointers when custom cursor active */
+@media (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Canvas shell */
+.reactor-canvas {
+  touch-action: none;
+}
+
+.mask-reveal {
+  overflow: hidden;
+}
+
+@keyframes ambientDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-3%, 4%, 0);
+  }
+}
+
+@keyframes particleFloat {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(6px, -10px, 0);
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
