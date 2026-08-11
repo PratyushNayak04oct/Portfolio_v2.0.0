@@ -19,10 +19,6 @@ const ReactorScene = dynamic(
   { ssr: false },
 );
 
-const BrunoScene = dynamic(() => import('@/components/bruno/BrunoScene'), {
-  ssr: false,
-});
-
 function ScrollRuntime() {
   useScrollReset();
   useLenis();
@@ -62,9 +58,6 @@ export default function ClientShell({ children }) {
             }
           >
             <ReactorScene />
-          </SceneErrorBoundary>
-          <SceneErrorBoundary>
-            <BrunoScene />
           </SceneErrorBoundary>
         </div>
       ) : null}

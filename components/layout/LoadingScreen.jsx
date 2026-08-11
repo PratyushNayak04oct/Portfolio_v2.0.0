@@ -6,7 +6,7 @@ import { labActions, useLabStore } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import CoreEmblem from '@/components/ui/CoreEmblem';
 
-useGLTF.preload('/models/reactor.glb?v=20');
+useGLTF.preload('/models/reactor.glb?v=21');
 
 const TICK_MS = 4800;
 const CLIMAX_MS = 900;

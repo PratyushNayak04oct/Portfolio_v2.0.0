@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=20';
+const MODEL_URL = '/models/reactor.glb?v=21';
 
 /** Shiny brown-red copper — bright metallic with gold sheen */
 function makeLustrousCopper(source) {
@@ -115,6 +115,10 @@ export default function ReactorModel({ reducedMotion }) {
           obj.name === 'CoreGlass' ||
           obj.name === 'CoreInnerRing' ||
           obj.name.startsWith('CoreCross');
+        // Keep the glowing triangle upright — never inherit stray spins
+        if (obj.name === 'TriangleCore' || obj.name.includes('CoreTriangleAura')) {
+          obj.rotation.set(obj.rotation.x, 0, obj.rotation.z);
+        }
         const isCoilBar =
           obj.name.startsWith('CoilBlock') ||
           obj.name.startsWith('CoilBar') ||
@@ -285,7 +289,7 @@ export default function ReactorModel({ reducedMotion }) {
     magneticContainment: { z: 0, opacity: 1 },
     energyConduits: { intensity: 0.4, sequential: 0.2 },
     coreHousing: { z: 0 },
-    core: { rotationSpeed: 0.12, emissive: 1.35 },
+    core: { rotationSpeed: 0, emissive: 1.35 },
     emitter: { pulse: 0.32, intensity: 1.2 },
     layout: { x: 1.1, y: 0.04, scale: 1.22 },
     facing: { x: 0, y: 0 },
@@ -343,15 +347,17 @@ export default function ReactorModel({ reducedMotion }) {
     };
 
     const g = groups.current;
+    // Faster ring spins; alternate CW / CCW. Core stays still (standing triangle).
     shiftDepth(g.outerShell || [], c.outerShell.z);
-    shiftDepth(g.ring01 || [], c.ring01.z, 0.065 + c.ring01.rotation);
-    shiftDepth(g.ring02 || [], c.ring02.z, -(0.055 + Math.abs(c.ring02.rotation)));
-    shiftDepth(g.ring03 || [], c.ring03.z, 0.075 + c.ring03.rotation);
+    shiftDepth(g.ring01 || [], c.ring01.z, 0.18 + c.ring01.rotation * 1.6);
+    shiftDepth(g.ring02 || [], c.ring02.z, -(0.22 + Math.abs(c.ring02.rotation) * 1.6));
+    shiftDepth(g.ring03 || [], c.ring03.z, 0.26 + c.ring03.rotation * 1.6);
     shiftDepth(g.coolingSystem || [], c.coolingSystem.z);
     shiftDepth(g.magneticContainment || [], c.magneticContainment.z);
     shiftDepth(g.coreHousing || [], c.coreHousing.z);
-    shiftDepth(g.core || [], c.coreHousing.z * 0.35, c.core.rotationSpeed * 0.55);
-    shiftDepth(g.emitter || [], c.ring01.z * 0.4);
+    shiftDepth(g.core || [], c.coreHousing.z * 0.35, 0);
+    // Emitter / light rings counter-spin vs outer metal rings
+    shiftDepth(g.emitter || [], c.ring01.z * 0.4, -(0.2 + Math.abs(c.ring01.rotation) * 1.2));
     shiftDepth(g.backPlate || [], c.coreHousing.z * 0.22);
 
     (g.outerShell || []).forEach((obj) => {

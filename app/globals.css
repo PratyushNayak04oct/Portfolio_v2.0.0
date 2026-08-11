@@ -548,3 +548,54 @@
 .link-underline:hover::after {
   width: 100%;
 }
+
+/* Primary CTA — left-to-right fill on hover */
+.btn-fill {
+  isolation: isolate;
+}
+
+.btn-fill__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--text-primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s var(--ease-soft);
+  pointer-events: none;
+}
+
+.btn-fill:hover .btn-fill__bg,
+.btn-fill:focus-visible .btn-fill__bg {
+  transform: scaleX(1);
+}
+
+.btn-fill:hover,
+.btn-fill:focus-visible {
+  border-color: var(--border);
+}
+
+/* Continuous arrow nudge — independent of hover */
+@keyframes arrowNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(7px);
+  }
+}
+
+.btn-arrow-nudge {
+  animation: arrowNudge 1.15s var(--ease-soft) infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-arrow-nudge {
+    animation: none;
+  }
+  .btn-fill__bg {
+    transition: none;
+  }
+}
