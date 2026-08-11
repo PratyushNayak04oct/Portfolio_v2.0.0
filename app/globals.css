@@ -609,12 +609,25 @@
 
 /* Micro pulse for mono status chips */
 .hud-blink {
-  animation: softPulse 2.8s ease-in-out infinite;
+  animation: softPulse 3.6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .text-tech-scan,
   .hud-blink {
+    animation: none;
+  }
+  .text-tech-scan {
+    color: var(--text-primary);
+    -webkit-text-fill-color: var(--text-primary);
+    background: none;
+  }
+}
+
+/* Disable expensive glass hover sheen on low-power / prefer static */
+@media (max-width: 768px) {
+  .glass-panel::after,
+  .text-tech-scan {
     animation: none;
   }
   .text-tech-scan {

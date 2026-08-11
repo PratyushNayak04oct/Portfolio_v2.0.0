@@ -14,6 +14,7 @@ export const site = {
     upwork: 'https://upwork.com',
   },
   nav: [
+    { label: 'HOME', href: '#hero' },
     { label: 'WORK', href: '#projects' },
     { label: 'ABOUT', href: '#about' },
     { label: 'LAB', href: '#lab' },

@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import ReactorModel from './ReactorModel';
 import ReactorAnnotations from './ReactorAnnotations';
 import ReactorPower from './ReactorPower';
@@ -16,35 +15,45 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { isLowPowerDevice, isWebGLAvailable } from '@/lib/webgl';
 import { damp } from '@/lib/motion';
 
-function ReactorRig({ reducedMotion }) {
+function ReactorRig({ reducedMotion, lowPower }) {
   const group = useRef(null);
   const pointer = useDampedPointer(damp.reactor);
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const camCurrent = useRef({ z: 3.15, fov: 30 });
   const lastFov = useRef(30);
+  const frameSkip = useRef(0);
 
   /* eslint-disable react-hooks/immutability */
   useFrame((_, delta) => {
     if (!group.current) return;
+    // On low-power devices, update every other frame
+    if (lowPower) {
+      frameSkip.current ^= 1;
+      if (frameSkip.current === 0) return;
+    }
+
     const t = reactorScroll.target;
     const d = Math.min(delta, 1 / 30);
     const k = reducedMotion ? 1 : 1 - Math.exp(-7 * d);
 
-    const tx = pointer.current.x * 0.04;
-    const ty = -pointer.current.y * 0.028;
-    group.current.rotation.y += (tx - group.current.rotation.y) * k;
-    group.current.rotation.x += (ty - group.current.rotation.x) * k;
+    if (!lowPower && !reducedMotion) {
+      const tx = pointer.current.x * 0.035;
+      const ty = -pointer.current.y * 0.024;
+      group.current.rotation.y += (tx - group.current.rotation.y) * k;
+      group.current.rotation.x += (ty - group.current.rotation.x) * k;
+    }
 
     if (t?.camera) {
       camCurrent.current.z += ((t.camera.z ?? 3.6) - camCurrent.current.z) * k;
       camCurrent.current.fov += ((t.camera.fov ?? 34) - camCurrent.current.fov) * k;
       camera.position.z = camCurrent.current.z;
-      if (Math.abs(camCurrent.current.fov - lastFov.current) > 0.04) {
+      if (Math.abs(camCurrent.current.fov - lastFov.current) > 0.05) {
         camera.fov = camCurrent.current.fov;
         camera.updateProjectionMatrix();
         lastFov.current = camCurrent.current.fov;
       }
     }
+    invalidate();
   });
   /* eslint-enable react-hooks/immutability */
 
@@ -55,35 +64,18 @@ function ReactorRig({ reducedMotion }) {
   );
 }
 
-function MetalEnvironment() {
-  const { gl, scene } = useThree();
-
-  useEffect(() => {
-    const pmrem = new THREE.PMREMGenerator(gl);
-    pmrem.compileEquirectangularShader();
-    const envScene = new RoomEnvironment();
-    const envMap = pmrem.fromScene(envScene, 0.04).texture;
-    scene.environment = envMap;
-    envScene.dispose?.();
-    return () => {
-      scene.environment = null;
-      envMap.dispose();
-      pmrem.dispose();
-    };
-  }, [gl, scene]);
-
-  return null;
-}
-
 function SceneContent({ reducedMotion, lowPower }) {
   return (
     <>
-      <MetalEnvironment />
-      <ambientLight intensity={0.42} color="#d8dde4" />
-      <hemisphereLight intensity={0.35} color="#efe6dc" groundColor="#081018" />
-      <directionalLight position={[2.5, 3, 5]} intensity={lowPower ? 0.95 : 1.15} color="#fff6ee" />
-      <directionalLight position={[-2.2, 1.2, 2.8]} intensity={0.55} color="#ffb280" />
-      <ReactorRig reducedMotion={reducedMotion} />
+      <ambientLight intensity={0.48} color="#d0d6de" />
+      <hemisphereLight intensity={0.28} color="#e8e0d6" groundColor="#081018" />
+      <directionalLight
+        position={[2.5, 3, 5]}
+        intensity={lowPower ? 0.85 : 1.0}
+        color="#fff4ea"
+      />
+      <directionalLight position={[-2.0, 1.0, 2.5]} intensity={0.28} color="#d4a078" />
+      <ReactorRig reducedMotion={reducedMotion} lowPower={lowPower} />
     </>
   );
 }
@@ -127,7 +119,7 @@ export default function ReactorScene() {
           className="reactor-canvas"
           dpr={1}
           frameloop={pageVisible ? 'always' : 'never'}
-          camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 40 }}
+          camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 36 }}
           gl={{
             antialias: false,
             alpha: true,
@@ -135,12 +127,12 @@ export default function ReactorScene() {
             stencil: false,
             depth: true,
           }}
-          performance={{ min: 0.3, debounce: 250 }}
+          performance={{ min: 0.25, debounce: 300 }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.setPixelRatio(1);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.05;
+            gl.toneMappingExposure = 0.95;
           }}
           style={{ background: 'transparent' }}
         >

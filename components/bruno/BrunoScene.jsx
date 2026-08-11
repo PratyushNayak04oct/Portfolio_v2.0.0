@@ -32,9 +32,8 @@ function BrunoCanvas() {
         gl.setPixelRatio(1);
       }}
     >
-      <ambientLight intensity={0.55} color="#e4eaf0" />
-      <directionalLight position={[2.8, 3.8, 2.2]} intensity={1.35} color="#fff8f0" />
-      <directionalLight position={[-2.2, 1.4, 1]} intensity={0.35} color="#c8d8e8" />
+      <ambientLight intensity={0.62} color="#e4eaf0" />
+      <directionalLight position={[2.8, 3.8, 2.2]} intensity={1.25} color="#fff8f0" />
       <Suspense fallback={null}>
         <BrunoModel state={BRUNO_STATES.Wag} />
       </Suspense>

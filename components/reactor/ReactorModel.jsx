@@ -6,15 +6,21 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=24';
+const MODEL_URL = '/models/reactor.glb?v=25';
 
-/** Lustrous copper — polished metal look without emissive neon */
+/** Copper only — true copper metal, lustrous but not over-bright */
 function makeLustrousCopper(source) {
-  const m = new THREE.MeshStandardMaterial({
-    color: '#c47a3a',
+  const m = new THREE.MeshPhysicalMaterial({
+    color: '#8f4a22',
     metalness: 1,
-    roughness: 0.16,
-    envMapIntensity: 2.15,
+    roughness: 0.34,
+    envMapIntensity: 1.05,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.4,
+    sheen: 0.35,
+    sheenRoughness: 0.45,
+    sheenColor: new THREE.Color('#b86a38'),
+    reflectivity: 0.75,
     toneMapped: true,
   });
   if (source?.name) m.name = source.name;
@@ -22,32 +28,32 @@ function makeLustrousCopper(source) {
 }
 
 function applySteel(m) {
-  m.color = new THREE.Color('#a8b4c0');
-  m.metalness = 1;
-  m.roughness = 0.2;
+  m.color = new THREE.Color('#9aa6b4');
+  m.metalness = 0.96;
+  m.roughness = 0.22;
   if (m.emissive) m.emissiveIntensity = 0;
-  if ('envMapIntensity' in m) m.envMapIntensity = 1.85;
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.3;
   m.needsUpdate = true;
 }
 
 function applySilver(m) {
-  m.color = new THREE.Color('#e0e7ee');
+  m.color = new THREE.Color('#d5dee6');
   m.metalness = 1;
-  m.roughness = 0.1;
+  m.roughness = 0.12;
   if (m.emissive) m.emissiveIntensity = 0;
-  if ('envMapIntensity' in m) m.envMapIntensity = 2.2;
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.6;
   m.needsUpdate = true;
 }
 
 function applyGold(m) {
-  m.color = new THREE.Color('#d4af57');
+  m.color = new THREE.Color('#c9a24a');
   m.metalness = 1;
-  m.roughness = 0.14;
+  m.roughness = 0.18;
   if (m.emissive) {
-    m.emissive.set('#000000');
-    m.emissiveIntensity = 0;
+    m.emissive.set('#3a2a08');
+    m.emissiveIntensity = 0.04;
   }
-  if ('envMapIntensity' in m) m.envMapIntensity = 2.1;
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.7;
   m.needsUpdate = true;
 }
 
@@ -112,9 +118,9 @@ export default function ReactorModel({ reducedMotion }) {
           obj.name === 'CoreGlass' ||
           obj.name === 'CoreInnerRing' ||
           obj.name.startsWith('CoreCross');
-        // Keep the glowing triangle upright — 180° flip, larger presence
+        // Invert core upside-down (tip opposite) + slightly larger presence
         if (obj.name === 'TriangleCore' || obj.name.includes('CoreTriangleAura')) {
-          obj.rotation.set(obj.rotation.x, obj.rotation.y, obj.rotation.z + Math.PI);
+          obj.rotation.set(obj.rotation.x + Math.PI, obj.rotation.y, obj.rotation.z);
           obj.scale.multiplyScalar(1.08);
         }
         const isCoilBar =
@@ -159,10 +165,13 @@ export default function ReactorModel({ reducedMotion }) {
         if (isTriangleCore) {
           const hot = obj.name === 'TriangleCore';
           m.emissive = new THREE.Color(hot ? '#e8f9ff' : '#4ec8ff');
-          m.emissiveIntensity = hot ? 4.2 : 2.4;
+          m.emissiveIntensity = hot ? 3.2 : 1.8;
           m.toneMapped = false;
           if (m.color) m.color = new THREE.Color(hot ? '#d0f0ff' : '#2a6a90');
-          glow.push({ m, base: hot ? 4.0 : 2.2 });
+          // Core triangle materials pulse; other glow mats stay steady
+          const isCorePulse =
+            obj.name === 'TriangleCore' || obj.name.includes('CoreTriangleAura');
+          glow.push({ m, base: hot ? 3.0 : 1.7, pulse: isCorePulse });
         } else if (isCopper) {
           const copper = makeLustrousCopper(m);
           const idx = mats.indexOf(m);
@@ -334,7 +343,12 @@ export default function ReactorModel({ reducedMotion }) {
 
     const breath = reducedMotion
       ? 0
-      : Math.sin(state.clock.elapsedTime * 0.85) * 0.12 * c.emitter.pulse;
+      : Math.sin(state.clock.elapsedTime * 0.85) * 0.08 * c.emitter.pulse;
+
+    // Slow, constant core glow ↔ deglow (smooth sine)
+    const corePulse = reducedMotion
+      ? 0.72
+      : 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(state.clock.elapsedTime * 0.65));
 
     const shiftDepth = (list, depth, spin = 0) => {
       list.forEach((obj) => {
@@ -375,12 +389,16 @@ export default function ReactorModel({ reducedMotion }) {
       obj.position.z = (b.z / len) * len * f;
     });
 
-    glowMats.current.forEach(({ m, base }) => {
-      m.emissiveIntensity = base + c.emitter.intensity * 0.1 + breath;
+    glowMats.current.forEach(({ m, base, pulse }) => {
+      if (pulse) {
+        m.emissiveIntensity = base * corePulse;
+      } else {
+        m.emissiveIntensity = base + c.emitter.intensity * 0.08 + breath;
+      }
     });
 
     if (lights.current.core) {
-      lights.current.core.intensity = 1.15 + c.emitter.intensity * 0.22 + breath;
+      lights.current.core.intensity = 0.55 + corePulse * 0.55;
     }
   });
 
@@ -394,13 +412,13 @@ export default function ReactorModel({ reducedMotion }) {
           lights.current.core = el;
         }}
         color="#8adfff"
-        intensity={0.45}
-        distance={3.2}
+        intensity={0.7}
+        distance={3.0}
         decay={2}
         position={[0, 0, 0.5]}
       />
-      {/* Warm key for copper/steel lustre */}
-      <pointLight color="#ff9a55" intensity={0.85} distance={4.2} decay={2} position={[0.85, 0.2, 0.85]} />
+      {/* Soft warm fill so copper reads metallic, not blown-out */}
+      <pointLight color="#c87840" intensity={0.35} distance={3.6} decay={2} position={[0.7, 0.15, 0.75]} />
     </group>
   );
 }
