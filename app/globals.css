@@ -549,11 +549,9 @@
   width: 100%;
 }
 
-/* Techy text accents — light, GPU-friendly */
+/* Clean text accents — subtle, not constant GPU shimmer */
 .text-tech-glow {
-  text-shadow:
-    0 0 18px color-mix(in srgb, var(--cyan) 35%, transparent),
-    0 0 40px color-mix(in srgb, var(--blue) 18%, transparent);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--cyan) 22%, transparent);
 }
 
 .text-tech-scan {
@@ -561,9 +559,9 @@
   background: linear-gradient(
     100deg,
     var(--text-primary) 0%,
-    var(--text-primary) 40%,
+    var(--text-primary) 42%,
     #9ae8ff 50%,
-    var(--text-primary) 60%,
+    var(--text-primary) 58%,
     var(--text-primary) 100%
   );
   background-size: 220% 100%;
@@ -571,7 +569,7 @@
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: techScan 7.5s ease-in-out infinite;
+  animation: techScan 11s ease-in-out infinite;
 }
 
 @keyframes techScan {

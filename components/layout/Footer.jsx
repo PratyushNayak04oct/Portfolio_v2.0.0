@@ -10,7 +10,8 @@ const BrunoScene = dynamic(() => import('@/components/bruno/BrunoScene'), {
 });
 
 export default function Footer() {
-  const { warmBoot, loaded } = useLabStore();
+  const warmBoot = useLabStore((s) => s.warmBoot);
+  const loaded = useLabStore((s) => s.loaded);
   const showBruno = warmBoot || loaded;
 
   return (

@@ -6,15 +6,15 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=23';
+const MODEL_URL = '/models/reactor.glb?v=24';
 
-/** Real copper — lustrous metal, no emissive “glow” (Standard is cheaper than Physical) */
+/** Lustrous copper — polished metal look without emissive neon */
 function makeLustrousCopper(source) {
   const m = new THREE.MeshStandardMaterial({
-    color: '#b87333',
+    color: '#c47a3a',
     metalness: 1,
-    roughness: 0.32,
-    envMapIntensity: 1.45,
+    roughness: 0.16,
+    envMapIntensity: 2.15,
     toneMapped: true,
   });
   if (source?.name) m.name = source.name;
@@ -22,32 +22,32 @@ function makeLustrousCopper(source) {
 }
 
 function applySteel(m) {
-  m.color = new THREE.Color('#9aa6b4');
-  m.metalness = 0.96;
-  m.roughness = 0.22;
+  m.color = new THREE.Color('#a8b4c0');
+  m.metalness = 1;
+  m.roughness = 0.2;
   if (m.emissive) m.emissiveIntensity = 0;
-  if ('envMapIntensity' in m) m.envMapIntensity = 1.3;
+  if ('envMapIntensity' in m) m.envMapIntensity = 1.85;
   m.needsUpdate = true;
 }
 
 function applySilver(m) {
-  m.color = new THREE.Color('#d5dee6');
+  m.color = new THREE.Color('#e0e7ee');
   m.metalness = 1;
-  m.roughness = 0.12;
+  m.roughness = 0.1;
   if (m.emissive) m.emissiveIntensity = 0;
-  if ('envMapIntensity' in m) m.envMapIntensity = 1.6;
+  if ('envMapIntensity' in m) m.envMapIntensity = 2.2;
   m.needsUpdate = true;
 }
 
 function applyGold(m) {
-  m.color = new THREE.Color('#c9a24a');
+  m.color = new THREE.Color('#d4af57');
   m.metalness = 1;
-  m.roughness = 0.18;
+  m.roughness = 0.14;
   if (m.emissive) {
-    m.emissive.set('#3a2a08');
-    m.emissiveIntensity = 0.04;
+    m.emissive.set('#000000');
+    m.emissiveIntensity = 0;
   }
-  if ('envMapIntensity' in m) m.envMapIntensity = 1.7;
+  if ('envMapIntensity' in m) m.envMapIntensity = 2.1;
   m.needsUpdate = true;
 }
 
@@ -69,11 +69,13 @@ export default function ReactorModel({ reducedMotion }) {
     const steelCore = [];
     c.traverse((obj) => {
       if (!obj.isMesh) return;
-      // Remove loose cables + leftover strand copies
+      // Remove cables / strand leftovers / thin braid-extra coils
       if (
         /^Cable[_-]?\d*$/i.test(obj.name) ||
         obj.name.startsWith('Cable') ||
-        /strand/i.test(obj.name)
+        /strand/i.test(obj.name) ||
+        /braid/i.test(obj.name) ||
+        /extra/i.test(obj.name)
       ) {
         obj.visible = false;
         return;
@@ -392,15 +394,13 @@ export default function ReactorModel({ reducedMotion }) {
           lights.current.core = el;
         }}
         color="#8adfff"
-        intensity={0.6}
-        distance={3.8}
+        intensity={0.45}
+        distance={3.2}
         decay={2}
         position={[0, 0, 0.5]}
       />
-      {/* Warm + gold rim lights so copper reads bright and shiny */}
-      <pointLight color="#ff8a40" intensity={1.25} distance={5} decay={2} position={[0.9, 0.25, 0.9]} />
-      <pointLight color="#f0a050" intensity={0.7} distance={4.4} decay={2} position={[-0.85, -0.1, 0.75]} />
-      <pointLight color="#e8f0f8" intensity={0.28} distance={4} position={[0, 0.4, 1.1]} />
+      {/* Warm key for copper/steel lustre */}
+      <pointLight color="#ff9a55" intensity={0.85} distance={4.2} decay={2} position={[0.85, 0.2, 0.85]} />
     </group>
   );
 }

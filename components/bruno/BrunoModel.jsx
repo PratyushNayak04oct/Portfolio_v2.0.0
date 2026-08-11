@@ -122,7 +122,7 @@ function Leg({
 
 /**
  * Default standing pose targets (radians / units).
- * Blended each frame toward the active state.
+ * Happy wag only — grounded, gentle motion.
  */
 function poseFor(state, t) {
   const tip = Math.sin(t * 3.2) * 0.07;
@@ -146,101 +146,23 @@ function poseFor(state, t) {
     wagAmp: 0.55,
   };
 
-  switch (state) {
-    case BRUNO_STATES.Bark: {
-      // Planted crouch — drop body with leg fold so paws stay on the ground
-      return {
-        ...base,
-        rootY: -0.155,
-        torsoY: -0.02,
-        torsoRx: 0.32,
-        neckRx: -0.42,
-        headRx: -0.28 + Math.sin(t * 12) * 0.06,
-        headRy: Math.sin(t * 2) * 0.08,
-        headRz: Math.sin(t * 3) * 0.1,
-        jaw: 0.55 + Math.abs(Math.sin(t * 14)) * 0.35,
-        fl: [0.42, 0.72, -0.12],
-        fr: [0.42, 0.72, -0.12],
-        bl: [0.28, 0.48, 0.04],
-        br: [0.28, 0.48, 0.04],
-        wagSpeed: 16,
-        wagAmp: 0.95,
-      };
-    }
-    case BRUNO_STATES.Sit: {
-      // Hind folded, front straight vertical — grounded
-      return {
-        ...base,
-        rootY: -0.12,
-        torsoY: -0.03,
-        torsoRx: -0.38,
-        neckRx: -0.08,
-        headRx: 0.1,
-        headRy: Math.sin(t * 1.4) * 0.2,
-        headRz: 0.05,
-        jaw: 0.1 + Math.sin(t * 3) * 0.03,
-        fl: [-0.05, 0.08, 0.02],
-        fr: [-0.05, 0.08, 0.02],
-        bl: [1.05, 1.35, -0.45],
-        br: [1.05, 1.35, -0.45],
-        wagSpeed: 10,
-        wagAmp: 0.7,
-      };
-    }
-    case BRUNO_STATES.Shake: {
-      // Handshake — raise one front paw; keep other three planted
-      return {
-        ...base,
-        rootY: -0.02,
-        torsoRz: -0.06,
-        neckRx: -0.08,
-        headRx: -0.05,
-        headRy: 0.15,
-        headRz: -0.12,
-        jaw: 0.14 + Math.sin(t * 4) * 0.04,
-        fl: [-1.15, 0.95, 0.55],
-        fr: [0.08, 0.22, 0],
-        bl: [0.05, 0.22, 0],
-        br: [-0.02, 0.2, 0],
-        wagSpeed: 12,
-        wagAmp: 0.65,
-      };
-    }
-    case BRUNO_STATES.Excited: {
-      return {
-        ...base,
-        rootY: 0,
-        headRx: -0.1,
-        headRy: Math.sin(t * 1.8) * 0.28,
-        headRz: 0.1 + Math.sin(t * 2) * 0.08,
-        jaw: 0.18 + Math.sin(t * 5) * 0.05,
-        fl: [0.05, 0.2, 0],
-        fr: [0.05, 0.2, 0],
-        bl: [0.04, 0.2, 0],
-        br: [-0.04, 0.2, 0],
-        wagSpeed: 15,
-        wagAmp: 0.9,
-      };
-    }
-    case BRUNO_STATES.Wag: {
-      return {
-        ...base,
-        rootY: 0,
-        headRx: -0.08,
-        headRy: Math.sin(t * 1.4) * 0.22,
-        jaw: 0.12 + Math.sin(t * 4) * 0.04,
-        wagSpeed: 12,
-        wagAmp: 0.75,
-      };
-    }
-    case BRUNO_STATES.Idle:
-    default:
-      return {
-        ...base,
-        wagSpeed: 8,
-        wagAmp: 0.4,
-      };
+  if (state === BRUNO_STATES.Wag) {
+    return {
+      ...base,
+      rootY: 0,
+      headRx: -0.08,
+      headRy: Math.sin(t * 1.4) * 0.22,
+      jaw: 0.12 + Math.sin(t * 4) * 0.04,
+      wagSpeed: 12,
+      wagAmp: 0.78,
+    };
   }
+
+  return {
+    ...base,
+    wagSpeed: 8,
+    wagAmp: 0.4,
+  };
 }
 
 /**
@@ -405,7 +327,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
   /* eslint-enable react-hooks/immutability */
 
   return (
-    <group ref={root} position={[0, 0.48, 0]} scale={1.52} rotation={[0, baseYaw, 0]}>
+    <group ref={root} position={[0, 0.48, 0]} scale={1.95} rotation={[0, baseYaw, 0]}>
       {/* —— Matte black chassis —— */}
       <group ref={torso}>
         <mesh position={[0, 0.02, 0.12]} material={mats.black} rotation={[0.05, 0, Math.PI / 2]}>
@@ -580,8 +502,7 @@ export default function BrunoModel({ state = BRUNO_STATES.Wag }) {
         rear
       />
 
-      <pointLight color={RED} intensity={0.5} distance={1.6} position={[0.15, 0.1, 0.2]} />
-      <pointLight color="#c8d0d8" intensity={0.32} distance={2} position={[-0.3, 0.4, 0.3]} />
+      <pointLight color={RED} intensity={0.28} distance={1.2} position={[0.12, 0.08, 0.18]} />
     </group>
   );
 }

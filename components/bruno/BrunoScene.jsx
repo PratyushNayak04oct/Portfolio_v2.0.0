@@ -1,9 +1,9 @@
 'use client';
 
-import { Suspense, useEffect, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Canvas } from '@react-three/fiber';
 import BrunoModel from './BrunoModel';
-import { useBrunoController } from './BrunoController';
+import { BRUNO_STATES } from '@/data/brunoStates';
 import { useLabStore } from '@/lib/labStore';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
@@ -11,68 +11,67 @@ const subscribeNoop = () => () => {};
 const getClientMounted = () => true;
 const getServerMounted = () => false;
 
-function BrunoCanvas({ state }) {
+function BrunoCanvas() {
   const isMobile = useIsMobile();
   return (
     <Canvas
-      dpr={isMobile ? [1, 1] : [1, 1.15]}
+      dpr={1}
       camera={{ position: [1.85, 1.15, 2.55], fov: 30 }}
       gl={{
         antialias: false,
         alpha: true,
-        toneMappingExposure: 1.15,
+        toneMappingExposure: 1.12,
         powerPreference: 'high-performance',
+        stencil: false,
+        depth: true,
       }}
-      performance={{ min: 0.4, debounce: 200 }}
+      performance={{ min: 0.35, debounce: 250 }}
       frameloop="always"
-      onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+      onCreated={({ gl }) => {
+        gl.setClearColor(0x000000, 0);
+        gl.setPixelRatio(1);
+      }}
     >
-      <ambientLight intensity={0.58} color="#e4eaf0" />
-      <directionalLight position={[2.8, 3.8, 2.2]} intensity={1.5} color="#fff8f0" />
-      <directionalLight position={[-2.2, 1.4, 1]} intensity={0.4} color="#c8d8e8" />
-      <directionalLight position={[1, 2, -1.5]} intensity={0.35} color="#e8c878" />
+      <ambientLight intensity={0.55} color="#e4eaf0" />
+      <directionalLight position={[2.8, 3.8, 2.2]} intensity={1.35} color="#fff8f0" />
+      <directionalLight position={[-2.2, 1.4, 1]} intensity={0.35} color="#c8d8e8" />
       <Suspense fallback={null}>
-        <BrunoModel state={state} />
+        <BrunoModel state={BRUNO_STATES.Wag} />
       </Suspense>
     </Canvas>
   );
 }
 
-/** Companion dock — lives in the site footer (not fixed overlay). */
+/** Companion dock — happy wag only, greeting on hover. */
 export default function BrunoScene() {
   const webgl = useLabStore((s) => s.webgl);
   const loaded = useLabStore((s) => s.loaded);
-  const {
-    state,
-    menuOpen,
-    actions,
-    onHoverStart,
-    onHoverEnd,
-    onTap,
-    closeMenu,
-    playAction,
-  } = useBrunoController();
   const mounted = useSyncExternalStore(
     subscribeNoop,
     getClientMounted,
     getServerMounted,
   );
+  const rootRef = useRef(null);
+  const [inView, setInView] = useState(false);
   const [hello, setHello] = useState(false);
 
   useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') closeMenu();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [menuOpen, closeMenu]);
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: '80px', threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   if (!mounted) return null;
 
   return (
     <div
-      className={`pointer-events-none relative z-10 mx-auto w-[140px] transition-opacity duration-700 ease-out sm:mx-0 sm:w-[168px] md:w-[190px] ${
+      ref={rootRef}
+      className={`pointer-events-none relative z-10 mx-auto w-[168px] transition-opacity duration-700 ease-out sm:mx-0 sm:w-[200px] md:w-[230px] ${
         loaded ? 'opacity-100' : 'opacity-0'
       }`}
     >
@@ -80,68 +79,37 @@ export default function BrunoScene() {
         <button
           type="button"
           data-cursor="interactive"
-          onClick={onTap}
-          onPointerEnter={() => {
-            setHello(true);
-            onHoverStart();
-          }}
-          onPointerLeave={() => {
-            setHello(false);
-            onHoverEnd();
-          }}
-          aria-label="Hi, my name is B.R.U.N.O. — open actions"
-          aria-expanded={menuOpen}
-          aria-haspopup="menu"
+          onPointerEnter={() => setHello(true)}
+          onPointerLeave={() => setHello(false)}
+          onFocus={() => setHello(true)}
+          onBlur={() => setHello(false)}
+          aria-label="Hi my name is B.R.U.N.O. Thank you for visiting the website."
           className="group relative block w-full overflow-visible text-left"
         >
           <span
-            className={`pointer-events-none absolute -top-9 left-1/2 z-10 max-w-[90vw] -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan/35 bg-secondary/92 px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.1em] text-cyan shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all duration-300 sm:text-tech sm:tracking-[0.14em] ${
-              hello && !menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+            className={`pointer-events-none absolute bottom-[92%] left-1/2 z-10 w-[min(92vw,220px)] -translate-x-1/2 rounded-2xl border border-cyan/35 bg-secondary/94 px-3 py-2 text-center font-mono text-[0.58rem] leading-snug tracking-[0.04em] text-cyan shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-md transition-all duration-300 sm:text-[0.62rem] ${
+              hello ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
             }`}
           >
-            Hi, My Name is B.R.U.N.O.
+            Hi my name is B.R.U.N.O.
+            <span className="mt-1 block text-ink-secondary normal-case tracking-normal">
+              Thank you for visiting the website.
+            </span>
           </span>
 
-          <div className="relative h-[120px] sm:h-[140px] md:h-[155px]">
-            {webgl ? (
-              <BrunoCanvas state={state} />
+          <div className="relative h-[148px] sm:h-[172px] md:h-[196px]">
+            {webgl && inView ? (
+              <BrunoCanvas />
             ) : (
               <div
                 className="flex h-full items-end justify-center pb-2"
                 aria-hidden="true"
               >
-                <div className="h-12 w-14 rounded-t-[40%] border border-cyan/25 bg-gradient-to-b from-surface/80 to-transparent sm:h-14 sm:w-16" />
+                <div className="h-14 w-16 rounded-t-[40%] border border-cyan/25 bg-gradient-to-b from-surface/80 to-transparent sm:h-16 sm:w-[4.5rem]" />
               </div>
             )}
           </div>
         </button>
-
-        {/* Vertical action menu — appears on click near the dog */}
-        <div
-          role="menu"
-          aria-label="B.R.U.N.O. actions"
-          className={`absolute bottom-[70%] left-[calc(100%-4px)] z-20 flex flex-col gap-0.5 transition-all duration-200 sm:left-full sm:ml-1 ${
-            menuOpen
-              ? 'pointer-events-auto translate-x-0 opacity-100'
-              : 'pointer-events-none -translate-x-1 opacity-0'
-          }`}
-        >
-          {actions.map((action) => (
-            <button
-              key={action.id}
-              type="button"
-              role="menuitem"
-              data-cursor="interactive"
-              onClick={(e) => {
-                e.stopPropagation();
-                playAction(action.id);
-              }}
-              className="whitespace-nowrap border border-cyan/30 bg-secondary/95 px-2 py-1 font-mono text-[0.55rem] uppercase tracking-[0.12em] text-cyan/90 shadow-[0_6px_18px_rgba(0,0,0,0.35)] backdrop-blur-md transition-colors hover:border-cyan/60 hover:bg-secondary hover:text-cyan sm:text-tech"
-            >
-              {action.label}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

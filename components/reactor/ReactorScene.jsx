@@ -1,9 +1,9 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import ReactorModel from './ReactorModel';
 import ReactorAnnotations from './ReactorAnnotations';
 import ReactorPower from './ReactorPower';
@@ -23,7 +23,6 @@ function ReactorRig({ reducedMotion }) {
   const camCurrent = useRef({ z: 3.15, fov: 30 });
   const lastFov = useRef(30);
 
-  /* R3F mutates the Three.js camera each frame by design */
   /* eslint-disable react-hooks/immutability */
   useFrame((_, delta) => {
     if (!group.current) return;
@@ -31,9 +30,8 @@ function ReactorRig({ reducedMotion }) {
     const d = Math.min(delta, 1 / 30);
     const k = reducedMotion ? 1 : 1 - Math.exp(-7 * d);
 
-    // Tiny hover — large tilt was a major lag feel on dense meshes
-    const tx = pointer.current.x * 0.045;
-    const ty = -pointer.current.y * 0.03;
+    const tx = pointer.current.x * 0.04;
+    const ty = -pointer.current.y * 0.028;
     group.current.rotation.y += (tx - group.current.rotation.y) * k;
     group.current.rotation.x += (ty - group.current.rotation.x) * k;
 
@@ -41,7 +39,7 @@ function ReactorRig({ reducedMotion }) {
       camCurrent.current.z += ((t.camera.z ?? 3.6) - camCurrent.current.z) * k;
       camCurrent.current.fov += ((t.camera.fov ?? 34) - camCurrent.current.fov) * k;
       camera.position.z = camCurrent.current.z;
-      if (Math.abs(camCurrent.current.fov - lastFov.current) > 0.02) {
+      if (Math.abs(camCurrent.current.fov - lastFov.current) > 0.04) {
         camera.fov = camCurrent.current.fov;
         camera.updateProjectionMatrix();
         lastFov.current = camCurrent.current.fov;
@@ -57,29 +55,35 @@ function ReactorRig({ reducedMotion }) {
   );
 }
 
+function MetalEnvironment() {
+  const { gl, scene } = useThree();
+
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    pmrem.compileEquirectangularShader();
+    const envScene = new RoomEnvironment();
+    const envMap = pmrem.fromScene(envScene, 0.04).texture;
+    scene.environment = envMap;
+    envScene.dispose?.();
+    return () => {
+      scene.environment = null;
+      envMap.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+
+  return null;
+}
+
 function SceneContent({ reducedMotion, lowPower }) {
   return (
     <>
-      <ambientLight intensity={0.58} color="#d8dde4" />
-      <hemisphereLight intensity={0.48} color="#efe6dc" groundColor="#081018" />
-      <directionalLight position={[2.5, 3, 5]} intensity={1.2} color="#fff6ee" />
-      {/* Warm fill keeps polished copper from reading blue under cool key light */}
-      <directionalLight position={[-2.5, 1.4, 3]} intensity={0.7} color="#ffb280" />
-      <directionalLight position={[0.4, -1.2, 2.2]} intensity={0.32} color="#ffd0a8" />
-
+      <MetalEnvironment />
+      <ambientLight intensity={0.42} color="#d8dde4" />
+      <hemisphereLight intensity={0.35} color="#efe6dc" groundColor="#081018" />
+      <directionalLight position={[2.5, 3, 5]} intensity={lowPower ? 0.95 : 1.15} color="#fff6ee" />
+      <directionalLight position={[-2.2, 1.2, 2.8]} intensity={0.55} color="#ffb280" />
       <ReactorRig reducedMotion={reducedMotion} />
-
-      {/* Bloom is costly on dense GLBs — only on capable desktops, lighter settings */}
-      {!reducedMotion && !lowPower && (
-        <EffectComposer multisampling={0} enableNormalPass={false} frameBufferType={undefined}>
-          <Bloom
-            intensity={0.12}
-            luminanceThreshold={0.82}
-            luminanceSmoothing={0.9}
-            mipmapBlur={false}
-          />
-        </EffectComposer>
-      )}
     </>
   );
 }
@@ -88,6 +92,7 @@ export default function ReactorScene() {
   const webgl = useLabStore((s) => s.webgl);
   const reducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
+  const [pageVisible, setPageVisible] = useState(true);
   const lowPower = useMemo(
     () => isMobile || (typeof window !== 'undefined' && isLowPowerDevice()),
     [isMobile],
@@ -95,6 +100,13 @@ export default function ReactorScene() {
 
   useEffect(() => {
     labActions.setWebgl(isWebGLAvailable());
+  }, []);
+
+  useEffect(() => {
+    const onVis = () => setPageVisible(document.visibilityState === 'visible');
+    onVis();
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
 
   if (!webgl) {
@@ -113,8 +125,9 @@ export default function ReactorScene() {
       <div className="absolute inset-0">
         <Canvas
           className="reactor-canvas"
-          dpr={lowPower ? [1, 1] : [1, 1.2]}
-          camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 50 }}
+          dpr={1}
+          frameloop={pageVisible ? 'always' : 'never'}
+          camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 40 }}
           gl={{
             antialias: false,
             alpha: true,
@@ -122,11 +135,12 @@ export default function ReactorScene() {
             stencil: false,
             depth: true,
           }}
-          performance={{ min: 0.35, debounce: 200 }}
+          performance={{ min: 0.3, debounce: 250 }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
+            gl.setPixelRatio(1);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.0;
+            gl.toneMappingExposure = 1.05;
           }}
           style={{ background: 'transparent' }}
         >
@@ -135,7 +149,7 @@ export default function ReactorScene() {
           </Suspense>
         </Canvas>
       </div>
-      <ReactorAnnotations />
+      {!lowPower ? <ReactorAnnotations /> : null}
       <ReactorPower />
     </div>
   );
