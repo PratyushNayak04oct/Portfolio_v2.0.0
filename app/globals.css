@@ -36,12 +36,12 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-ibm-plex-mono);
 
-  --text-hero: clamp(3.5rem, 8vw, 8.5rem);
-  --text-statement: clamp(2.75rem, 6vw, 5.5rem);
-  --text-section: clamp(2.25rem, 5vw, 4rem);
-  --text-project: clamp(2rem, 4vw, 3.5rem);
-  --text-sub: clamp(1.25rem, 2vw, 1.75rem);
-  --text-body: clamp(1.0625rem, 1.1vw, 1.1875rem);
+  --text-hero: clamp(2.35rem, 11vw, 8.5rem);
+  --text-statement: clamp(1.85rem, 8.5vw, 5.5rem);
+  --text-section: clamp(1.75rem, 5.5vw, 4rem);
+  --text-project: clamp(1.55rem, 4.5vw, 3.5rem);
+  --text-sub: clamp(1.1rem, 2.4vw, 1.75rem);
+  --text-body: clamp(1rem, 1.15vw, 1.1875rem);
   --text-nav: clamp(0.8125rem, 0.9vw, 0.9375rem);
   --text-meta: clamp(0.6875rem, 0.8vw, 0.8125rem);
   --text-tech: clamp(0.625rem, 0.7vw, 0.75rem);
@@ -75,6 +75,15 @@
     scroll-behavior: auto;
     background: var(--bg-deepest);
     color: var(--text-primary);
+    overflow-x: clip;
+  }
+
+  html.loader-lock,
+  html.loader-lock body {
+    overflow: hidden !important;
+    height: 100%;
+    overscroll-behavior: none;
+    touch-action: none;
   }
 
   body {
@@ -83,7 +92,7 @@
     font-family: var(--font-geist-sans), system-ui, sans-serif;
     font-size: var(--text-body);
     line-height: 1.6;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -142,7 +151,8 @@
   margin-inline: auto;
   width: 100%;
   max-width: 1320px;
-  padding-inline: clamp(1rem, 4vw, 3rem);
+  padding-inline: max(1rem, env(safe-area-inset-left), clamp(1rem, 4vw, 3rem))
+    max(1rem, env(safe-area-inset-right), clamp(1rem, 4vw, 3rem));
 }
 
 @utility text-hero {
@@ -284,7 +294,7 @@
 .copy-plate::before {
   content: '';
   position: absolute;
-  inset: -12% -8%;
+  inset: -8% -4%;
   z-index: -1;
   pointer-events: none;
   border-radius: 28px;
@@ -292,6 +302,12 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 0 48px rgba(5, 8, 11, 0.55);
+}
+
+@media (min-width: 640px) {
+  .copy-plate::before {
+    inset: -12% -8%;
+  }
 }
 
 .mask-reveal {

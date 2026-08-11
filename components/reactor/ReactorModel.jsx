@@ -322,9 +322,11 @@ export default function ReactorModel({ reducedMotion }) {
     lerpKey('layout', ['x', 'y', 'scale'], layoutK);
     lerpKey('facing', ['x', 'y'], layoutK);
 
-    root.current.position.x = c.layout.x;
+    root.current.position.x = c.layout.x * (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 1);
     root.current.position.y = c.layout.y;
-    root.current.scale.setScalar(c.layout.scale);
+    const mobileScale =
+      typeof window !== 'undefined' && window.innerWidth < 768 ? 0.72 : 1;
+    root.current.scale.setScalar(c.layout.scale * mobileScale);
     root.current.rotation.x = c.facing.x;
     root.current.rotation.y = c.facing.y;
 

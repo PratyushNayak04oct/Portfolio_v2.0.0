@@ -44,7 +44,7 @@ export default function Projects() {
   }, [reduced, isDesktop]);
 
   return (
-    <section id="projects" ref={sectionRef} className="relative z-20">
+    <section id="projects" ref={sectionRef} className="relative z-20 overflow-x-clip">
       <div className="content-grid section-space pb-8 md:pb-10">
         <SectionHeading
           eyebrow="04 — Work"
@@ -53,12 +53,26 @@ export default function Projects() {
         />
       </div>
 
+      {/* Mobile: swipeable track. Desktop: GSAP pin/scrub horizontal. */}
       <div
         ref={trackRef}
-        className="flex gap-6 px-[clamp(1.25rem,4vw,3rem)] pb-24 will-change-transform md:gap-8 md:pb-32"
+        className={
+          isDesktop
+            ? 'flex gap-6 px-[clamp(1.25rem,4vw,3rem)] pb-24 will-change-transform md:gap-8 md:pb-32'
+            : 'flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-[max(1rem,env(safe-area-inset-left))] pb-28 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5 sm:pb-32'
+        }
       >
         {projects.map((project, index) => (
-          <ProjectCard key={project.slug} project={project} index={index} />
+          <div
+            key={project.slug}
+            className={
+              isDesktop
+                ? 'contents'
+                : 'w-[min(86vw,22rem)] shrink-0 snap-center first:ml-0 last:mr-[max(1rem,env(safe-area-inset-right))]'
+            }
+          >
+            <ProjectCard project={project} index={index} />
+          </div>
         ))}
       </div>
     </section>

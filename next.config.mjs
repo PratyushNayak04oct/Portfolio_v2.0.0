@@ -2,8 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Allow LAN / network access during local development (WSL, phone, etc.)
-  allowedDevOrigins: ['172.24.213.43', '127.0.0.1', 'localhost'],
+  // Allow LAN / phone / Cursor Simple Browser access during local development
+  allowedDevOrigins: [
+    '10.183.70.43',
+    '172.24.213.43',
+    '127.0.0.1',
+    'localhost',
+  ],
   images: {
     formats: ['image/avif', 'image/webp'],
   },

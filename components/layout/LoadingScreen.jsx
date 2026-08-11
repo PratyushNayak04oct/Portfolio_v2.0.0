@@ -14,8 +14,8 @@ const REVEAL_MS = 1600;
 const FLY_MS = 2200;
 const SETTLE_MS = 800;
 const FAILSAFE_MS = 16000;
-const BASE_CORE = 172;
-const AURA_SIZE = Math.round(BASE_CORE * 2.05);
+const BASE_CORE = 148;
+const AURA_SIZE = 'min(72vmin, 320px)';
 
 function easeInCubic(t) {
   return t * t * t;
@@ -80,6 +80,10 @@ export default function LoadingScreen() {
       return () => window.clearTimeout(id);
     }
 
+    // Lock page scroll under the loader (prevents scrollbar + Lenis scroll)
+    document.documentElement.classList.add('loader-lock');
+    window.scrollTo(0, 0);
+
     const started = performance.now();
     let raf = 0;
     let phaseAt = 0;
@@ -98,6 +102,7 @@ export default function LoadingScreen() {
       localPhase = 'done';
       setPhase('done');
       labActions.setCoreDocked(true);
+      document.documentElement.classList.remove('loader-lock');
       if (veilRef.current) veilRef.current.style.opacity = '0';
       if (auraHostRef.current) auraHostRef.current.style.opacity = '0';
       if (shellRef.current) shellRef.current.style.opacity = '0';
@@ -289,8 +294,15 @@ export default function LoadingScreen() {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(failsafe);
+      document.documentElement.classList.remove('loader-lock');
     };
   }, [reduced]);
+
+  useEffect(() => {
+    if (hide) {
+      document.documentElement.classList.remove('loader-lock');
+    }
+  }, [hide]);
 
   useEffect(() => {
     if (coreDocked && loaded && !hide) {
@@ -305,7 +317,7 @@ export default function LoadingScreen() {
   return (
     <div
       ref={shellRef}
-      className={`fixed inset-0 z-[200] overflow-hidden transition-opacity duration-700 ease-out ${
+      className={`fixed inset-0 z-[200] h-[100dvh] max-h-[100dvh] w-screen overflow-hidden overscroll-none transition-opacity duration-700 ease-out ${
         phase === 'fly' || phase === 'settle' || phase === 'done' || loaded
           ? 'pointer-events-none'
           : ''

@@ -130,7 +130,7 @@ export default function Hero() {
             </span>
             <span
               data-hero="line"
-              className="mt-1 block text-hero will-change-transform opacity-0"
+              className="mt-1 block break-words text-hero will-change-transform opacity-0 [overflow-wrap:anywhere]"
             >
               DIGITAL SYSTEMS.
             </span>
@@ -155,7 +155,7 @@ export default function Hero() {
 
         <div
           data-hero="reactor-slot"
-          className="relative col-span-12 flex min-h-[32vh] items-center justify-center opacity-0 sm:min-h-[40vh] lg:col-span-6 lg:min-h-[65vh]"
+          className="relative col-span-12 flex min-h-[12vh] items-center justify-center opacity-0 sm:min-h-[28vh] lg:col-span-6 lg:min-h-[65vh]"
         >
           <div data-hero="ambient" className="absolute inset-0 opacity-0">
             <div

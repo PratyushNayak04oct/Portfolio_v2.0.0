@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import { getGsap } from '@/lib/gsap';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { useLabStore } from '@/lib/labStore';
 
 let lenisInstance = null;
 
@@ -17,6 +18,7 @@ export function getLenis() {
  */
 export function useLenis() {
   const reducedMotion = usePrefersReducedMotion();
+  const { loaded } = useLabStore();
 
   useEffect(() => {
     if (reducedMotion) return undefined;
@@ -32,8 +34,11 @@ export function useLenis() {
     });
 
     lenisInstance = lenis;
-    // Ensure reload lands at top even if browser restored scroll
     lenis.scrollTo(0, { immediate: true });
+
+    // Keep Lenis stopped until the loader hands off
+    if (!loaded) lenis.stop();
+    else lenis.start();
 
     lenis.on('scroll', ScrollTrigger.update);
 
@@ -52,4 +57,10 @@ export function useLenis() {
       ScrollTrigger.refresh();
     };
   }, [reducedMotion]);
+
+  useEffect(() => {
+    if (!lenisInstance) return;
+    if (loaded) lenisInstance.start();
+    else lenisInstance.stop();
+  }, [loaded]);
 }
