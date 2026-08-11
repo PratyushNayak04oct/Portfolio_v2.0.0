@@ -1,18 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#05080b"/>
-  <circle cx="32" cy="32" r="22" fill="#0a1824"/>
-  <circle cx="32" cy="32" r="18" fill="url(#g)" opacity="0.55"/>
-  <polygon points="32,46 18,24 46,24" fill="url(#t)"/>
-  <polygon points="32,42 22,27 42,27" fill="#ffffff" opacity="0.55"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img">
   <defs>
-    <radialGradient id="g" cx="50%" cy="45%" r="55%">
-      <stop offset="0%" stop-color="#9ae8ff"/>
-      <stop offset="100%" stop-color="#0a4a80"/>
+    <radialGradient id="aura" cx="50%" cy="48%" r="50%">
+      <stop offset="0%" stop-color="rgba(180,240,255,0.9)"/>
+      <stop offset="55%" stop-color="rgba(60,180,240,0.35)"/>
+      <stop offset="100%" stop-color="rgba(20,80,140,0)"/>
     </radialGradient>
-    <linearGradient id="t" x1="32" y1="22" x2="32" y2="46" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ffffff"/>
-      <stop offset="0.45" stop-color="#b8f0ff"/>
-      <stop offset="1" stop-color="#3ab8ef"/>
-    </linearGradient>
+    <radialGradient id="tri" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#d8f6ff"/>
+      <stop offset="70%" stop-color="#5ed4ff"/>
+      <stop offset="100%" stop-color="#1a8fd0"/>
+    </radialGradient>
   </defs>
+  <circle cx="50" cy="50" r="46" fill="url(#aura)"/>
+  <!-- Inverted triangle core (matches loading / nav emblem) -->
+  <polygon points="50,82 16,26 84,26" fill="url(#tri)"/>
+  <polygon points="50,72 28,34 72,34" fill="rgba(255,255,255,0.55)"/>
 </svg>

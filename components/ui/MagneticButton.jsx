@@ -3,8 +3,8 @@
 import { Children, isValidElement, useRef } from 'react';
 
 /**
- * Magnetic CTA. Primary variant fills left→right on hover;
- * trailing arrow nudges continuously.
+ * Magnetic CTA. Primary fills left→right on hover with deep readable text;
+ * arrows nudge continuously in their pointing direction.
  */
 export default function MagneticButton({
   href,
@@ -21,7 +21,7 @@ export default function MagneticButton({
     const rect = el.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
-    el.style.transform = `translate3d(${x * 0.2}px, ${y * 0.2}px, 0) scale(1.03)`;
+    el.style.transform = `translate3d(${x * 0.18}px, ${y * 0.18}px, 0) scale(1.025)`;
   };
 
   const onLeave = () => {
@@ -30,16 +30,21 @@ export default function MagneticButton({
 
   const Comp = href ? 'a' : 'button';
   const childArr = Children.toArray(children);
-  // Split trailing arrow (span with → / ↗) from label text
   let label = childArr;
   let arrow = null;
+  let arrowChar = '→';
   if (childArr.length >= 2) {
     const last = childArr[childArr.length - 1];
     if (isValidElement(last)) {
       arrow = last;
       label = childArr.slice(0, -1);
+      const raw = last.props?.children;
+      if (typeof raw === 'string') arrowChar = raw.trim();
     }
   }
+
+  const isDiag = arrowChar.includes('↗') || arrowChar.includes('↖') || arrowChar.includes('↘');
+  const arrowClass = isDiag ? 'btn-arrow-nudge-diag' : 'btn-arrow-nudge';
 
   if (variant === 'ghost') {
     return (
@@ -57,16 +62,13 @@ export default function MagneticButton({
         {...props}
       >
         {label}
-        {arrow ? (
-          <span className="btn-arrow-nudge inline-block" aria-hidden="true">
-            {arrow.props?.children ?? '↗'}
-          </span>
-        ) : null}
+        <span className={`${arrowClass} inline-block`} aria-hidden="true">
+          {arrowChar || '↗'}
+        </span>
       </Comp>
     );
   }
 
-  // Primary — fill from left with text color; text becomes border color
   return (
     <Comp
       ref={ref}
@@ -75,23 +77,15 @@ export default function MagneticButton({
       onPointerMove={onMove}
       onPointerLeave={onLeave}
       className={`btn-fill group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-cyan/50 bg-transparent px-7 py-3.5 font-sans text-nav uppercase tracking-[0.14em] text-ink ${className}`}
-      style={{
-        transition: 'transform 0.4s var(--ease-soft)',
-      }}
+      style={{ transition: 'transform 0.4s var(--ease-soft)' }}
       {...props}
     >
       <span className="btn-fill__bg" aria-hidden="true" />
-      <span className="relative z-[1] inline-flex items-center gap-2 transition-colors duration-300 ease-out group-hover:text-cyan">
+      <span className="relative z-[1] inline-flex items-center gap-2 transition-colors duration-300 ease-out group-hover:text-[#030a10]">
         {label}
-        {arrow ? (
-          <span className="btn-arrow-nudge inline-block" aria-hidden="true">
-            {arrow.props?.children ?? '→'}
-          </span>
-        ) : (
-          <span className="btn-arrow-nudge inline-block" aria-hidden="true">
-            →
-          </span>
-        )}
+        <span className={`${arrowClass} inline-block`} aria-hidden="true">
+          {arrowChar || '→'}
+        </span>
       </span>
     </Comp>
   );

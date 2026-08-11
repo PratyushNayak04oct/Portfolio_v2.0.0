@@ -125,7 +125,7 @@ export default function Hero() {
             className="text-depth mt-7 font-display font-medium text-ink sm:mt-10"
             style={{ color: 'var(--text-primary)', WebkitTextFillColor: 'var(--text-primary)' }}
           >
-            <span data-hero="line" className="block text-hero will-change-transform opacity-0">
+            <span data-hero="line" className="block text-hero text-tech-scan will-change-transform opacity-0">
               I BUILD
             </span>
             <span
@@ -140,7 +140,7 @@ export default function Hero() {
             data-hero="support"
             className="text-depth-soft mt-8 max-w-md text-sub leading-relaxed text-ink-secondary will-change-transform opacity-0"
           >
-            And experiences that feel alive.
+            <span className="text-tech-glow">And experiences that feel alive.</span>
           </p>
 
           <div data-hero="cta" className="mt-12 flex flex-wrap gap-5 opacity-0">

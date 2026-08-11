@@ -63,7 +63,7 @@ export default function Contact() {
           <h2 className="text-depth mt-8 font-display font-medium text-ink">
             <span
               data-cta
-              className="block text-statement will-change-transform opacity-0"
+              className="block text-statement text-tech-scan will-change-transform opacity-0"
             >
               LET&apos;S BUILD
             </span>
@@ -75,7 +75,7 @@ export default function Contact() {
             </span>
             <span
               data-cta
-              className="mt-2 block text-statement will-change-transform opacity-0"
+              className="mt-2 block text-statement text-tech-scan will-change-transform opacity-0"
             >
               REMARKABLE.
             </span>
@@ -84,7 +84,7 @@ export default function Contact() {
             data-cta
             className="text-depth-soft mt-10 max-w-lg text-sub leading-relaxed text-ink-secondary opacity-0"
           >
-            Have an idea? Let&apos;s turn it into something real.
+            <span className="text-tech-glow">Have an idea? Let&apos;s turn it into something real.</span>
           </p>
           <div data-cta className="mt-12 opacity-0">
             <MagneticButton href={`mailto:${site.email}`}>
@@ -104,7 +104,7 @@ export default function Contact() {
             <p className="mt-4 font-display text-project text-ink">
               {Math.round(power)}%
             </p>
-            <p className="mt-3 font-mono text-tech uppercase tracking-[0.14em] text-teal">
+            <p className="hud-blink mt-3 font-mono text-tech uppercase tracking-[0.14em] text-teal">
               {systemOnline || power >= 100 ? '● SYSTEM ONLINE' : '● POWERING'}
             </p>
             <p className="mt-8 font-mono text-tech uppercase tracking-[0.12em] text-ink-muted">

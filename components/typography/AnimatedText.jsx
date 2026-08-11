@@ -7,7 +7,7 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 /**
  * Scroll-triggered text motion.
- * modes: reveal | blur | rise | words | lines
+ * modes: reveal | blur | rise | words | lines | chars
  */
 export default function AnimatedText({
   as: Tag = 'p',
@@ -26,6 +26,11 @@ export default function AnimatedText({
     return children.split(/(\s+)/);
   }, [children, mode]);
 
+  const charParts = useMemo(() => {
+    if (mode !== 'chars' || typeof children !== 'string') return null;
+    return children.split('');
+  }, [children, mode]);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
@@ -34,12 +39,37 @@ export default function AnimatedText({
 
     if (reduced) {
       gsap.set(el, { autoAlpha: 1, y: 0, filter: 'none', rotateX: 0 });
-      gsap.set(el.querySelectorAll('[data-word]'), {
+      gsap.set(el.querySelectorAll('[data-word], [data-char]'), {
         autoAlpha: 1,
         y: 0,
         filter: 'none',
       });
       return undefined;
+    }
+
+    const chars = el.querySelectorAll('[data-char]');
+    if (mode === 'chars' && chars.length) {
+      gsap.set(chars, { autoAlpha: 0, y: 16, filter: 'blur(6px)' });
+      const tween = gsap.to(chars, {
+        autoAlpha: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: duration.text * 0.85,
+        ease: ease.soft,
+        delay,
+        stagger: stagger * 0.45,
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 88%',
+          once,
+        },
+      });
+      return () => {
+        tween.kill();
+        ScrollTrigger.getAll()
+          .filter((t) => t.trigger === el)
+          .forEach((t) => t.kill());
+      };
     }
 
     const words = el.querySelectorAll('[data-word]');
@@ -117,7 +147,27 @@ export default function AnimatedText({
         .filter((t) => t.trigger === el)
         .forEach((t) => t.kill());
     };
-  }, [delay, mode, once, reduced, stagger, wordParts]);
+  }, [delay, mode, once, reduced, stagger, wordParts, charParts]);
+
+  if (mode === 'chars' && charParts) {
+    return (
+      <Tag ref={ref} className={className} aria-label={typeof children === 'string' ? children : undefined}>
+        {charParts.map((ch, i) =>
+          ch === ' ' ? (
+            <span key={`s-${i}`}> </span>
+          ) : (
+            <span
+              key={`c-${i}`}
+              data-char
+              className="inline-block will-change-transform"
+            >
+              {ch}
+            </span>
+          ),
+        )}
+      </Tag>
+    );
+  }
 
   if (mode === 'words' && wordParts) {
     return (

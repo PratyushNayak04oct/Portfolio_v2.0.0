@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useState, useSyncExternalStore } from 'react';
 import { Canvas } from '@react-three/fiber';
 import BrunoModel from './BrunoModel';
 import { useBrunoController } from './BrunoController';
@@ -15,15 +15,16 @@ function BrunoCanvas({ state }) {
   const isMobile = useIsMobile();
   return (
     <Canvas
-      dpr={isMobile ? [1, 1.15] : [1, 1.4]}
+      dpr={isMobile ? [1, 1] : [1, 1.15]}
       camera={{ position: [1.85, 1.15, 2.55], fov: 30 }}
       gl={{
-        antialias: !isMobile,
+        antialias: false,
         alpha: true,
-        toneMappingExposure: 1.28,
+        toneMappingExposure: 1.15,
         powerPreference: 'high-performance',
       }}
-      performance={{ min: 0.5 }}
+      performance={{ min: 0.4, debounce: 200 }}
+      frameloop="always"
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
       <ambientLight intensity={0.58} color="#e4eaf0" />
@@ -39,14 +40,33 @@ function BrunoCanvas({ state }) {
 
 /** Companion dock — lives in the site footer (not fixed overlay). */
 export default function BrunoScene() {
-  const { webgl, loaded } = useLabStore();
-  const { state, onHoverStart, onHoverEnd, onTap } = useBrunoController();
+  const webgl = useLabStore((s) => s.webgl);
+  const loaded = useLabStore((s) => s.loaded);
+  const {
+    state,
+    menuOpen,
+    actions,
+    onHoverStart,
+    onHoverEnd,
+    onTap,
+    closeMenu,
+    playAction,
+  } = useBrunoController();
   const mounted = useSyncExternalStore(
     subscribeNoop,
     getClientMounted,
     getServerMounted,
   );
   const [hello, setHello] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeMenu();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen, closeMenu]);
 
   if (!mounted) return null;
 
@@ -56,42 +76,73 @@ export default function BrunoScene() {
         loaded ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      <button
-        type="button"
-        data-cursor="interactive"
-        onClick={onTap}
-        onPointerEnter={() => {
-          setHello(true);
-          onHoverStart();
-        }}
-        onPointerLeave={() => {
-          setHello(false);
-          onHoverEnd();
-        }}
-        aria-label="Hi, my name is B.R.U.N.O."
-        className="pointer-events-auto group relative block w-full overflow-visible text-left"
-      >
-        <span
-          className={`pointer-events-none absolute -top-9 left-1/2 z-10 max-w-[90vw] -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan/35 bg-secondary/92 px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.1em] text-cyan shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all duration-300 sm:text-tech sm:tracking-[0.14em] ${
-            hello ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+      <div className="pointer-events-auto relative">
+        <button
+          type="button"
+          data-cursor="interactive"
+          onClick={onTap}
+          onPointerEnter={() => {
+            setHello(true);
+            onHoverStart();
+          }}
+          onPointerLeave={() => {
+            setHello(false);
+            onHoverEnd();
+          }}
+          aria-label="Hi, my name is B.R.U.N.O. — open actions"
+          aria-expanded={menuOpen}
+          aria-haspopup="menu"
+          className="group relative block w-full overflow-visible text-left"
+        >
+          <span
+            className={`pointer-events-none absolute -top-9 left-1/2 z-10 max-w-[90vw] -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan/35 bg-secondary/92 px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.1em] text-cyan shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all duration-300 sm:text-tech sm:tracking-[0.14em] ${
+              hello && !menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+            }`}
+          >
+            Hi, My Name is B.R.U.N.O.
+          </span>
+
+          <div className="relative h-[120px] sm:h-[140px] md:h-[155px]">
+            {webgl ? (
+              <BrunoCanvas state={state} />
+            ) : (
+              <div
+                className="flex h-full items-end justify-center pb-2"
+                aria-hidden="true"
+              >
+                <div className="h-12 w-14 rounded-t-[40%] border border-cyan/25 bg-gradient-to-b from-surface/80 to-transparent sm:h-14 sm:w-16" />
+              </div>
+            )}
+          </div>
+        </button>
+
+        {/* Vertical action menu — appears on click near the dog */}
+        <div
+          role="menu"
+          aria-label="B.R.U.N.O. actions"
+          className={`absolute bottom-[70%] left-[calc(100%-4px)] z-20 flex flex-col gap-0.5 transition-all duration-200 sm:left-full sm:ml-1 ${
+            menuOpen
+              ? 'pointer-events-auto translate-x-0 opacity-100'
+              : 'pointer-events-none -translate-x-1 opacity-0'
           }`}
         >
-          Hi, My Name is B.R.U.N.O.
-        </span>
-
-        <div className="relative h-[120px] sm:h-[140px] md:h-[155px]">
-          {webgl ? (
-            <BrunoCanvas state={state} />
-          ) : (
-            <div
-              className="flex h-full items-end justify-center pb-2"
-              aria-hidden="true"
+          {actions.map((action) => (
+            <button
+              key={action.id}
+              type="button"
+              role="menuitem"
+              data-cursor="interactive"
+              onClick={(e) => {
+                e.stopPropagation();
+                playAction(action.id);
+              }}
+              className="whitespace-nowrap border border-cyan/30 bg-secondary/95 px-2 py-1 font-mono text-[0.55rem] uppercase tracking-[0.12em] text-cyan/90 shadow-[0_6px_18px_rgba(0,0,0,0.35)] backdrop-blur-md transition-colors hover:border-cyan/60 hover:bg-secondary hover:text-cyan sm:text-tech"
             >
-              <div className="h-12 w-14 rounded-t-[40%] border border-cyan/25 bg-gradient-to-b from-surface/80 to-transparent sm:h-14 sm:w-16" />
-            </div>
-          )}
+              {action.label}
+            </button>
+          ))}
         </div>
-      </button>
+      </div>
     </div>
   );
 }

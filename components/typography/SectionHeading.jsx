@@ -29,7 +29,7 @@ export default function SectionHeading({
         as="h2"
         mode="words"
         stagger={0.055}
-        className="text-depth font-display text-section font-medium text-ink"
+        className="text-depth text-tech-glow font-display text-section font-medium text-ink"
       >
         {title}
       </AnimatedText>

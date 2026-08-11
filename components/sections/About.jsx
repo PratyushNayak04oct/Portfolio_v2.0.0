@@ -45,7 +45,9 @@ export default function About() {
               <AnimatedText
                 as="p"
                 delay={0.16}
-                className="font-mono text-tech uppercase tracking-[0.16em] text-cyan"
+                mode="chars"
+                stagger={0.03}
+                className="hud-blink font-mono text-tech uppercase tracking-[0.16em] text-cyan text-tech-glow"
               >
                 Midnight Lab Operator
               </AnimatedText>

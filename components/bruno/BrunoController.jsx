@@ -1,20 +1,31 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BRUNO_STATES, brunoAmbient } from '@/data/brunoStates';
+import {
+  BRUNO_ACTIONS,
+  BRUNO_STATES,
+  brunoAmbient,
+} from '@/data/brunoStates';
 import { labActions } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 /**
- * Minimal companion: happy wag, faster wag + bark on hover/tap (no flip).
+ * Hover → Bark (crouch + jaw). Click → vertical action menu.
+ * Each trick plays, then returns to Wag.
  */
 export function useBrunoController() {
   const reduced = usePrefersReducedMotion();
   const [state, setState] = useState(() =>
     reduced ? BRUNO_STATES.Idle : brunoAmbient,
   );
+  const [menuOpen, setMenuOpen] = useState(false);
   const busy = useRef(false);
   const timer = useRef(0);
+  const menuOpenRef = useRef(false);
+
+  useEffect(() => {
+    menuOpenRef.current = menuOpen;
+  }, [menuOpen]);
 
   useEffect(() => {
     labActions.setBrunoState(reduced ? BRUNO_STATES.Idle : brunoAmbient);
@@ -31,8 +42,12 @@ export function useBrunoController() {
     busy.current = false;
   }, []);
 
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+  }, []);
+
   const onHoverStart = useCallback(() => {
-    if (reduced || busy.current) return;
+    if (reduced || busy.current || menuOpenRef.current) return;
     setState(BRUNO_STATES.Bark);
     labActions.setBrunoState(BRUNO_STATES.Bark);
     labActions.setBrunoStatus('BARK');
@@ -43,15 +58,48 @@ export function useBrunoController() {
     returnHappy();
   }, [reduced, returnHappy]);
 
+  /** Click toggles the small action menu near the dog */
   const onTap = useCallback(() => {
     if (reduced || busy.current) return;
-    busy.current = true;
-    if (timer.current) window.clearTimeout(timer.current);
-    setState(BRUNO_STATES.Bark);
-    labActions.setBrunoState(BRUNO_STATES.Bark);
-    labActions.setBrunoStatus('BARK');
-    timer.current = window.setTimeout(returnHappy, 900);
-  }, [reduced, returnHappy]);
+    const opening = !menuOpenRef.current;
+    if (opening) {
+      // Never update the shared store inside a setState updater
+      setState(brunoAmbient);
+      queueMicrotask(() => {
+        labActions.setBrunoState(brunoAmbient);
+        labActions.setBrunoStatus('READY');
+      });
+    }
+    setMenuOpen(opening);
+  }, [reduced]);
 
-  return { state, onHoverStart, onHoverEnd, onTap };
+  const playAction = useCallback(
+    (actionId) => {
+      if (reduced || busy.current) return;
+      const action = BRUNO_ACTIONS.find((a) => a.id === actionId);
+      if (!action) return;
+
+      if (timer.current) window.clearTimeout(timer.current);
+      busy.current = true;
+      setMenuOpen(false);
+      setState(action.id);
+      queueMicrotask(() => {
+        labActions.setBrunoState(action.id);
+        labActions.setBrunoStatus(action.status);
+      });
+      timer.current = window.setTimeout(returnHappy, action.duration);
+    },
+    [reduced, returnHappy],
+  );
+
+  return {
+    state,
+    menuOpen,
+    actions: BRUNO_ACTIONS,
+    onHoverStart,
+    onHoverEnd,
+    onTap,
+    closeMenu,
+    playAction,
+  };
 }

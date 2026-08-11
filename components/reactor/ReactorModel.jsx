@@ -6,24 +6,15 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { reactorScroll } from '@/lib/reactorScroll';
 
-const MODEL_URL = '/models/reactor.glb?v=21';
+const MODEL_URL = '/models/reactor.glb?v=23';
 
-/** Shiny brown-red copper — bright metallic with gold sheen */
+/** Real copper — lustrous metal, no emissive “glow” (Standard is cheaper than Physical) */
 function makeLustrousCopper(source) {
-  const m = new THREE.MeshPhysicalMaterial({
-    color: '#c24a22',
+  const m = new THREE.MeshStandardMaterial({
+    color: '#b87333',
     metalness: 1,
-    roughness: 0.045,
-    emissive: new THREE.Color('#6a220c'),
-    emissiveIntensity: 0.08,
-    envMapIntensity: 3.1,
-    clearcoat: 0.9,
-    clearcoatRoughness: 0.04,
-    reflectivity: 1,
-    ior: 1.32,
-    sheen: 0.65,
-    sheenRoughness: 0.14,
-    sheenColor: new THREE.Color('#f0a050'),
+    roughness: 0.32,
+    envMapIntensity: 1.45,
     toneMapped: true,
   });
   if (source?.name) m.name = source.name;
@@ -78,8 +69,12 @@ export default function ReactorModel({ reducedMotion }) {
     const steelCore = [];
     c.traverse((obj) => {
       if (!obj.isMesh) return;
-      // Remove loose cables + a few rings (declutter); gold rings stay
-      if (/^Cable[_-]?\d*$/i.test(obj.name) || obj.name.startsWith('Cable')) {
+      // Remove loose cables + leftover strand copies
+      if (
+        /^Cable[_-]?\d*$/i.test(obj.name) ||
+        obj.name.startsWith('Cable') ||
+        /strand/i.test(obj.name)
+      ) {
         obj.visible = false;
         return;
       }
@@ -115,9 +110,10 @@ export default function ReactorModel({ reducedMotion }) {
           obj.name === 'CoreGlass' ||
           obj.name === 'CoreInnerRing' ||
           obj.name.startsWith('CoreCross');
-        // Keep the glowing triangle upright — never inherit stray spins
+        // Keep the glowing triangle upright — 180° flip, larger presence
         if (obj.name === 'TriangleCore' || obj.name.includes('CoreTriangleAura')) {
-          obj.rotation.set(obj.rotation.x, 0, obj.rotation.z);
+          obj.rotation.set(obj.rotation.x, obj.rotation.y, obj.rotation.z + Math.PI);
+          obj.scale.multiplyScalar(1.08);
         }
         const isCoilBar =
           obj.name.startsWith('CoilBlock') ||

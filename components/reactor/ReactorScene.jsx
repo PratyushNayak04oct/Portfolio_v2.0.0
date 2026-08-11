@@ -69,13 +69,14 @@ function SceneContent({ reducedMotion, lowPower }) {
 
       <ReactorRig reducedMotion={reducedMotion} />
 
+      {/* Bloom is costly on dense GLBs — only on capable desktops, lighter settings */}
       {!reducedMotion && !lowPower && (
-        <EffectComposer multisampling={0} enableNormalPass={false}>
+        <EffectComposer multisampling={0} enableNormalPass={false} frameBufferType={undefined}>
           <Bloom
-            intensity={0.2}
-            luminanceThreshold={0.72}
-            luminanceSmoothing={0.85}
-            mipmapBlur
+            intensity={0.12}
+            luminanceThreshold={0.82}
+            luminanceSmoothing={0.9}
+            mipmapBlur={false}
           />
         </EffectComposer>
       )}
@@ -84,7 +85,7 @@ function SceneContent({ reducedMotion, lowPower }) {
 }
 
 export default function ReactorScene() {
-  const { webgl } = useLabStore();
+  const webgl = useLabStore((s) => s.webgl);
   const reducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
   const lowPower = useMemo(
@@ -112,20 +113,20 @@ export default function ReactorScene() {
       <div className="absolute inset-0">
         <Canvas
           className="reactor-canvas"
-          dpr={lowPower ? [1, 1.25] : [1, 1.5]}
+          dpr={lowPower ? [1, 1] : [1, 1.2]}
           camera={{ position: [0, 0, 3.15], fov: 30, near: 0.1, far: 50 }}
           gl={{
-            antialias: !lowPower,
+            antialias: false,
             alpha: true,
             powerPreference: 'high-performance',
             stencil: false,
             depth: true,
           }}
-          performance={{ min: 0.5 }}
+          performance={{ min: 0.35, debounce: 200 }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.06;
+            gl.toneMappingExposure = 1.0;
           }}
           style={{ background: 'transparent' }}
         >

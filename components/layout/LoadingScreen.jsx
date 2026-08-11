@@ -6,14 +6,14 @@ import { labActions, useLabStore } from '@/lib/labStore';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import CoreEmblem from '@/components/ui/CoreEmblem';
 
-useGLTF.preload('/models/reactor.glb?v=21');
+useGLTF.preload('/models/reactor.glb?v=23');
 
-const TICK_MS = 4800;
-const CLIMAX_MS = 900;
-const REVEAL_MS = 1600;
+const TICK_MS = 7200;
+const CLIMAX_MS = 1200;
+const REVEAL_MS = 1800;
 const FLY_MS = 2200;
 const SETTLE_MS = 800;
-const FAILSAFE_MS = 16000;
+const FAILSAFE_MS = 20000;
 const BASE_CORE = 148;
 const AURA_SIZE = 'min(72vmin, 320px)';
 
@@ -53,10 +53,11 @@ function getNavDockPoint() {
 }
 
 export default function LoadingScreen() {
-  const { loaded, coreDocked } = useLabStore();
+  const loaded = useLabStore((s) => s.loaded);
+  const coreDocked = useLabStore((s) => s.coreDocked);
   const reduced = usePrefersReducedMotion();
   const [hide, setHide] = useState(false);
-  /** Only used for a11y / chrome class — keep React out of the hot path */
+  /** Only used for a11y — keep React out of the hot path */
   const [phase, setPhase] = useState('tick');
 
   const shellRef = useRef(null);
@@ -100,6 +101,10 @@ export default function LoadingScreen() {
       if (finished.current) return;
       finished.current = true;
       localPhase = 'done';
+      if (shellRef.current) {
+        shellRef.current.dataset.phase = 'done';
+        shellRef.current.classList.add('pointer-events-none');
+      }
       setPhase('done');
       labActions.setCoreDocked(true);
       document.documentElement.classList.remove('loader-lock');
@@ -128,43 +133,52 @@ export default function LoadingScreen() {
     const tick = (now) => {
       if (localPhase === 'tick') {
         const t = Math.min(1, (now - started) / TICK_MS);
-        // Visible ticking: pulse accelerates gently over the charge
-        const freq = 1.15 + easeInCubic(t) * 4.2;
+        // Slow build → fast burst: frequency & amplitude ease in (not linear thrash)
+        const build = t * t; // ease-in quadratic
+        const burst = build * build; // sharper near end
+        const freq = 0.75 + build * 1.8 + burst * 2.2;
         const pulse = (Math.sin(t * Math.PI * 2 * freq) + 1) * 0.5;
-        const amp = 0.3 + t * 0.7;
+        // Soft envelope: gentle early, strong late — never harsh steps
+        const amp = 0.16 + build * 0.38 + burst * 0.32;
         const glow = 0.2 + pulse * amp;
 
-        // Core glow layers (opacity/scale only — no filters, no aura touch)
         if (haloRef.current) {
-          const hs = 0.85 + glow * 0.55;
-          haloRef.current.style.opacity = String(0.25 + glow * 0.75);
+          const hs = 0.82 + glow * 0.6;
+          haloRef.current.style.opacity = String(0.22 + glow * 0.78);
           haloRef.current.style.transform = `translate3d(-50%, -50%, 0) scale(${hs})`;
         }
         if (bloomRef.current) {
-          bloomRef.current.style.opacity = String(0.2 + glow * 0.55);
-          bloomRef.current.style.transform = `translate3d(-50%, -50%, 0) scale(${0.9 + glow * 0.45})`;
+          bloomRef.current.style.opacity = String(0.18 + glow * 0.58);
+          bloomRef.current.style.transform = `translate3d(-50%, -50%, 0) scale(${0.88 + glow * 0.5})`;
         }
         if (coreRef.current) {
-          const scale = 1 + pulse * 0.055 * (0.35 + t);
-          const rot = Math.sin(t * Math.PI * 2 * freq * 0.3) * 2.4 * t;
+          const scale = 1 + pulse * (0.025 + build * 0.04);
+          const rot = Math.sin(t * Math.PI * 2 * freq * 0.22) * (1.2 + build * 1.4);
           coreRef.current.style.transform = `translate3d(-50%, -50%, 0) scale(${scale}) rotate(${rot}deg)`;
         }
 
         paintProgress(easeInCubic(t) * 88, 'Charging');
 
-        // Warm WebGL only near the end of charge — never during early orbit
-        if (!warmed && t > 0.82) {
-          warmed = true;
-          labActions.setWarmBoot(true);
-        }
+        // Do NOT boot WebGL during the charge — that hitch kills the climax feel.
+        // Warm-boot happens under the opaque veil at climax start instead.
 
         if (t >= 1) {
           localPhase = 'climax';
           phaseAt = now;
-          setPhase('climax');
+          // Avoid React setState mid-RAF when possible — update DOM class via ref
+          if (shellRef.current) {
+            shellRef.current.dataset.phase = 'climax';
+          }
           paintProgress(96, 'Critical');
           if (auraHostRef.current) {
             auraHostRef.current.classList.add('loader-aura-host--fade');
+          }
+          // Boot GL under full veil so parse/compile hitch is hidden
+          if (!warmed) {
+            warmed = true;
+            requestAnimationFrame(() => {
+              labActions.setWarmBoot(true);
+            });
           }
         }
       } else if (localPhase === 'climax') {
@@ -187,7 +201,7 @@ export default function LoadingScreen() {
         if (c >= 1) {
           localPhase = 'reveal';
           phaseAt = now;
-          setPhase('reveal');
+          if (shellRef.current) shellRef.current.dataset.phase = 'reveal';
           if (!warmed) {
             warmed = true;
             labActions.setWarmBoot(true);
@@ -216,7 +230,10 @@ export default function LoadingScreen() {
 
         if (r >= 1) {
           localPhase = 'fly';
-          setPhase('fly');
+          if (shellRef.current) {
+            shellRef.current.dataset.phase = 'fly';
+            shellRef.current.classList.add('pointer-events-none');
+          }
           flyStarted = now;
           const rect = coreRef.current?.getBoundingClientRect();
           flyFrom = {
@@ -255,7 +272,7 @@ export default function LoadingScreen() {
         if (f >= 1) {
           localPhase = 'settle';
           settleStarted = now;
-          setPhase('settle');
+          if (shellRef.current) shellRef.current.dataset.phase = 'settle';
         }
       } else if (localPhase === 'settle') {
         const s = Math.min(1, (now - settleStarted) / SETTLE_MS);
@@ -322,6 +339,7 @@ export default function LoadingScreen() {
           ? 'pointer-events-none'
           : ''
       }`}
+      data-phase={phase}
       role="status"
       aria-live="polite"
       aria-label="Loading laboratory"

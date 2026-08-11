@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import BackgroundEnvironment from '@/components/environment/BackgroundEnvironment';
 import Grain from '@/components/environment/Grain';
+import TechMicro from '@/components/environment/TechMicro';
 import Navigation from '@/components/layout/Navigation';
 import LoadingScreen from '@/components/layout/LoadingScreen';
 import CustomCursor from '@/components/layout/CustomCursor';
@@ -27,7 +28,8 @@ function ScrollRuntime() {
 }
 
 export default function ClientShell({ children }) {
-  const { loaded, warmBoot } = useLabStore();
+  const loaded = useLabStore((s) => s.loaded);
+  const warmBoot = useLabStore((s) => s.warmBoot);
   // Boot WebGL only when the loader signals warmBoot (late charge) — keeps aura smooth
   const bootScenes = warmBoot || loaded;
 
@@ -42,6 +44,7 @@ export default function ClientShell({ children }) {
       <LoadingScreen />
       <BackgroundEnvironment />
       <Grain />
+      <TechMicro />
       <CustomCursor />
       <Navigation />
       {bootScenes ? (
