@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import ReactorModel from './ReactorModel';
 import ReactorAnnotations from './ReactorAnnotations';
 import ReactorPower from './ReactorPower';
@@ -64,17 +65,35 @@ function ReactorRig({ reducedMotion, lowPower }) {
   );
 }
 
+function CopperEnvironment() {
+  const { gl, scene } = useThree();
+
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const envMap = pmrem.fromScene(new RoomEnvironment(), 0.1).texture;
+    scene.environment = envMap;
+    return () => {
+      scene.environment = null;
+      envMap.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+
+  return null;
+}
+
 function SceneContent({ reducedMotion, lowPower }) {
   return (
     <>
-      <ambientLight intensity={0.48} color="#d0d6de" />
-      <hemisphereLight intensity={0.28} color="#e8e0d6" groundColor="#081018" />
+      <CopperEnvironment />
+      <ambientLight intensity={0.28} color="#a8b0b8" />
+      <hemisphereLight intensity={0.16} color="#c0b8ac" groundColor="#040608" />
       <directionalLight
         position={[2.5, 3, 5]}
-        intensity={lowPower ? 0.85 : 1.0}
-        color="#fff4ea"
+        intensity={lowPower ? 0.52 : 0.58}
+        color="#d8d2ca"
       />
-      <directionalLight position={[-2.0, 1.0, 2.5]} intensity={0.28} color="#d4a078" />
+      <directionalLight position={[-1.8, 0.8, 2.2]} intensity={0.12} color="#a87850" />
       <ReactorRig reducedMotion={reducedMotion} lowPower={lowPower} />
     </>
   );
@@ -132,7 +151,7 @@ export default function ReactorScene() {
             gl.setClearColor(0x000000, 0);
             gl.setPixelRatio(1);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 0.95;
+            gl.toneMappingExposure = 0.82;
           }}
           style={{ background: 'transparent' }}
         >
